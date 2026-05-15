@@ -59,11 +59,34 @@
     padding: 0.1em 0.35em;
     border-radius: 0.25rem;
   }
+  .day-form {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+  .day-form input {
+    font: inherit;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid color-mix(in srgb, var(--fg) 30%, transparent);
+    padding: 0.4rem 0.2rem;
+    text-align: center;
+    outline: none;
+    width: min(20ch, 80vw);
+  }
+  .day-form input:focus {
+    border-bottom-color: var(--accent);
+  }
 </style>
 </head>
 <body>
 <h1 class="question" id="q">Is it day today?</h1>
 <p class="answer" id="a">YES</p>
+<form class="day-form" id="f" hidden>
+  <input id="i" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="what day?" aria-label="day name">
+</form>
 <p class="hint" id="h" hidden>
   Try <code>isthatday.today/workout</code> or <code>?day=laundry</code>.
 </p>
@@ -76,12 +99,22 @@
 
   const q = document.getElementById("q");
   const h = document.getElementById("h");
+  const f = document.getElementById("f");
+  const i = document.getElementById("i");
 
   if (name) {
     q.textContent = `Is it ${name} day today?`;
     document.title = `Is it ${name} day today? YES`;
   } else {
     h.hidden = false;
+    f.hidden = false;
+    i.focus();
+    f.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const value = i.value.trim();
+      if (!value) return;
+      location.pathname = "/" + encodeURIComponent(value);
+    });
   }
 </script>
 </body>
