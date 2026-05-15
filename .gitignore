@@ -1,3 +1,7 @@
 .env
 .direnv
 .wrangler
+.terraform
+*.tfstate
+*.tfstate.*
+*.tfplan
