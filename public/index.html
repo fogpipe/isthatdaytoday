@@ -126,8 +126,7 @@
 <script>
   const params = new URLSearchParams(location.search);
   const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
-  const raw = fromPath.replace(/[-_+]+/g, " ").trim();
-  const name = raw.toLowerCase();
+  const name = fromPath.replace(/[-_+]+/g, " ").trim();
   const answer = (params.get("answer") ?? "YES").toUpperCase();
 
   const q = document.getElementById("q");
