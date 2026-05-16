@@ -59,6 +59,13 @@
     padding: 0.1em 0.35em;
     border-radius: 0.25rem;
   }
+  .hint a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .hint a:hover code {
+    background: color-mix(in srgb, var(--accent) 25%, transparent);
+  }
   .day-form {
     margin-top: 2rem;
     display: flex;
@@ -93,7 +100,7 @@
   <button type="submit" hidden></button>
 </form>
 <p class="hint" id="h" hidden>
-  Try <code>isthatday.today/workout</code>.
+  Try <a href="/workout"><code>isthatday.today/workout</code></a>
 </p>
 <script>
   const params = new URLSearchParams(location.search);
