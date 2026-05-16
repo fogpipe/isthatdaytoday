@@ -114,9 +114,14 @@
     a.textContent = answer;
     document.title = `Is it ${name} day today? ${answer}`;
   } else {
+    q.hidden = true;
+    a.hidden = true;
     h.hidden = false;
     f.hidden = false;
+    const samples = ["workout", "pizza", "taco", "pancake", "pajama"];
+    i.value = samples[Math.floor(Math.random() * samples.length)];
     i.focus();
+    i.select();
     f.addEventListener("submit", (e) => {
       e.preventDefault();
       const day = i.value.trim();
