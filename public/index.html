@@ -382,6 +382,12 @@
       btn.addEventListener("click", () => apply(p));
       presetsEl.appendChild(btn);
     }
+    const rnd = document.createElement("button");
+    rnd.type = "button";
+    rnd.className = "preset";
+    rnd.textContent = "🎲";
+    rnd.addEventListener("click", () => apply(presets[Math.floor(Math.random() * presets.length)]));
+    presetsEl.appendChild(rnd);
 
     const modal = document.getElementById("emoji-modal");
     const grid = document.getElementById("emoji-grid");
