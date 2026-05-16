@@ -89,13 +89,12 @@
   <input id="i" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="what day?" aria-label="day name">
 </form>
 <p class="hint" id="h" hidden>
-  Try <code>isthatday.today/workout</code> or <code>?day=laundry</code>.
+  Try <code>isthatday.today/workout</code>.
 </p>
 <script>
   const params = new URLSearchParams(location.search);
-  const fromQuery = params.get("day") ?? params.get("name");
   const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
-  const raw = (fromQuery ?? fromPath).replace(/[-_+]+/g, " ").trim();
+  const raw = fromPath.replace(/[-_+]+/g, " ").trim();
   const name = raw.toLowerCase();
   const answer = (params.get("answer") ?? "YES").toUpperCase();
 
