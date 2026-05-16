@@ -35,6 +35,11 @@
     padding: 2rem;
     box-sizing: border-box;
   }
+  .emoji {
+    font-size: clamp(3rem, 12vw, 7rem);
+    line-height: 1;
+    margin: 0 0 1rem;
+  }
   .question {
     font-size: clamp(1.5rem, 5vw, 3rem);
     font-weight: 500;
@@ -135,7 +140,7 @@
     border: 2px solid color-mix(in srgb, var(--fg) 40%, transparent);
     border-radius: 0.4rem;
   }
-  .day-form button {
+  .day-form button[type="submit"] {
     font: inherit;
     font-size: clamp(1rem, 3vw, 1.25rem);
     font-weight: 600;
@@ -148,12 +153,112 @@
     padding: 0.7rem 2.5rem;
     cursor: pointer;
   }
-  .day-form button:hover {
+  .day-form button[type="submit"]:hover {
     filter: brightness(1.05);
+  }
+  .emoji-btn {
+    font-size: 2rem;
+    line-height: 1;
+    width: 3.5rem;
+    height: 3.5rem;
+    background: transparent;
+    color: inherit;
+    border: 2px solid color-mix(in srgb, var(--fg) 40%, transparent);
+    border-radius: 0.4rem;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .emoji-btn.empty {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.6;
+  }
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+  }
+  .modal-card {
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid color-mix(in srgb, var(--fg) 20%, transparent);
+    border-radius: 0.6rem;
+    width: min(95vw, 32rem);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+  .modal-header {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .emoji-search {
+    flex: 1;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid color-mix(in srgb, var(--fg) 30%, transparent);
+    padding: 0.5rem 0.2rem;
+    outline: none;
+  }
+  .emoji-search:focus {
+    border-bottom-color: var(--accent);
+  }
+  .modal-action {
+    font: inherit;
+    font-size: 0.85rem;
+    color: inherit;
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+    border-radius: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+  }
+  .modal-action:hover {
+    background: color-mix(in srgb, var(--fg) 10%, transparent);
+  }
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2.4rem, 1fr));
+    gap: 0.15rem;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 12rem;
+  }
+  .emoji-cell {
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0.35rem;
+    background: transparent;
+    border: 0;
+    border-radius: 0.3rem;
+    cursor: pointer;
+  }
+  .emoji-cell:hover {
+    background: color-mix(in srgb, var(--fg) 12%, transparent);
+  }
+  .emoji-empty {
+    text-align: center;
+    opacity: 0.5;
+    padding: 1rem;
   }
 </style>
 </head>
 <body>
+<div class="emoji" id="e" hidden></div>
 <h1 class="question" id="q">Is it day today?</h1>
 <p class="answer" id="a">YES</p>
 <form class="day-form" id="f" hidden>
@@ -164,6 +269,11 @@
   <div class="field">
     <label for="ai">Answer</label>
     <input id="ai" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" value="YES">
+  </div>
+  <div class="field">
+    <label for="emi-btn">Emoji</label>
+    <button id="emi-btn" type="button" class="emoji-btn empty">pick</button>
+    <input id="emi" type="hidden">
   </div>
   <div class="field">
     <label for="ci">Answer color</label>
@@ -183,21 +293,34 @@
   <p class="hint-label">Try a preset:</p>
   <div class="presets" id="presets"></div>
 </div>
+<div class="modal" id="emoji-modal" hidden>
+  <div class="modal-card" role="dialog" aria-label="Pick an emoji">
+    <div class="modal-header">
+      <input class="emoji-search" id="emoji-search" type="text" autocomplete="off" spellcheck="false" placeholder="Search emoji...">
+      <button type="button" class="modal-action" id="emoji-clear">None</button>
+      <button type="button" class="modal-action" id="emoji-close">Close</button>
+    </div>
+    <div class="emoji-grid" id="emoji-grid"></div>
+  </div>
+</div>
 <script>
   const params = new URLSearchParams(location.search);
   const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
   const name = fromPath.replace(/[-_+]+/g, " ").trim();
   const answer = (params.get("answer") ?? "YES").toUpperCase();
+  const emoji = params.get("emoji") ?? "";
   const color = params.get("color");
   const qcolor = params.get("qcolor");
   const bg = params.get("bg");
 
   const q = document.getElementById("q");
   const a = document.getElementById("a");
+  const e = document.getElementById("e");
   const h = document.getElementById("h");
   const f = document.getElementById("f");
   const i = document.getElementById("i");
   const ai = document.getElementById("ai");
+  const emi = document.getElementById("emi");
   const ci = document.getElementById("ci");
   const qci = document.getElementById("qci");
   const bgi = document.getElementById("bgi");
@@ -213,7 +336,11 @@
   if (name) {
     q.textContent = `Is it ${name} day today?`;
     a.textContent = answer;
-    document.title = `Is it ${name} day today? ${answer}`;
+    if (emoji) {
+      e.textContent = emoji;
+      e.hidden = false;
+    }
+    document.title = `${emoji ? emoji + " " : ""}Is it ${name} day today? ${answer}`;
     if (color) root.style.setProperty("--accent", color);
     if (qcolor) root.style.setProperty("--fg", qcolor);
     if (bg) root.style.setProperty("--bg", bg);
@@ -222,16 +349,24 @@
     a.hidden = true;
     h.hidden = false;
     f.hidden = false;
+    const emiBtn = document.getElementById("emi-btn");
+    const setEmoji = (val) => {
+      emi.value = val;
+      emiBtn.textContent = val || "pick";
+      emiBtn.classList.toggle("empty", !val);
+    };
+
     const presets = [
-      { day: "workout", answer: "YES", color: defaults.accent, qcolor: defaults.fg, bg: defaults.bg },
-      { day: "pizza", answer: "YES", color: "#dc2626", qcolor: "#3f2a14", bg: "#fdf6e3" },
-      { day: "monday", answer: "NO", color: "#64748b", qcolor: "#cbd5e1", bg: "#1e293b" },
-      { day: "taco", answer: "SÍ", color: "#ea580c", qcolor: "#3f2a14", bg: "#fef3c7" },
-      { day: "pajama", answer: "ALWAYS", color: "#a78bfa", qcolor: "#c7d2fe", bg: "#1e1b4b" },
+      { day: "workout", answer: "YES", emoji: "", color: defaults.accent, qcolor: defaults.fg, bg: defaults.bg },
+      { day: "pizza", answer: "YES", emoji: "🍕", color: "#dc2626", qcolor: "#3f2a14", bg: "#fdf6e3" },
+      { day: "monday", answer: "NO", emoji: "😩", color: "#64748b", qcolor: "#cbd5e1", bg: "#1e293b" },
+      { day: "taco", answer: "SÍ", emoji: "🌮", color: "#ea580c", qcolor: "#3f2a14", bg: "#fef3c7" },
+      { day: "pajama", answer: "ALWAYS", emoji: "😴", color: "#a78bfa", qcolor: "#c7d2fe", bg: "#1e1b4b" },
     ];
     const apply = (p) => {
       i.value = p.day;
       ai.value = p.answer;
+      setEmoji(p.emoji);
       ci.value = p.color;
       qci.value = p.qcolor;
       bgi.value = p.bg;
@@ -242,19 +377,85 @@
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "preset";
-      btn.textContent = p.day;
+      btn.textContent = p.emoji ? `${p.emoji} ${p.day}` : p.day;
       btn.style.background = p.bg;
       btn.style.color = p.color;
       btn.addEventListener("click", () => apply(p));
       presetsEl.appendChild(btn);
     }
-    f.addEventListener("submit", (e) => {
-      e.preventDefault();
+
+    const modal = document.getElementById("emoji-modal");
+    const grid = document.getElementById("emoji-grid");
+    const search = document.getElementById("emoji-search");
+    const closeModal = () => { modal.hidden = true; };
+    const openModal = () => {
+      modal.hidden = false;
+      search.value = "";
+      filter("");
+      setTimeout(() => search.focus(), 0);
+      ensureEmojis();
+    };
+    const filter = (term) => {
+      const q = term.trim().toLowerCase();
+      let any = false;
+      for (const child of grid.children) {
+        if (child.dataset.k === undefined) continue;
+        const match = !q || child.dataset.k.includes(q);
+        child.hidden = !match;
+        if (match) any = true;
+      }
+      const emptyEl = grid.querySelector(".emoji-empty");
+      if (emptyEl) emptyEl.hidden = any;
+    };
+    const renderEmojis = () => {
+      grid.textContent = "";
+      const frag = document.createDocumentFragment();
+      for (const [ch, k] of window.EMOJIS) {
+        const cell = document.createElement("button");
+        cell.type = "button";
+        cell.className = "emoji-cell";
+        cell.textContent = ch;
+        cell.dataset.k = k;
+        cell.title = k;
+        cell.addEventListener("click", () => {
+          setEmoji(ch);
+          closeModal();
+        });
+        frag.appendChild(cell);
+      }
+      const empty = document.createElement("div");
+      empty.className = "emoji-empty";
+      empty.textContent = "no matches";
+      empty.hidden = true;
+      frag.appendChild(empty);
+      grid.appendChild(frag);
+    };
+    let loadStarted = false;
+    const ensureEmojis = () => {
+      if (window.EMOJIS) { if (!grid.children.length) renderEmojis(); return; }
+      if (loadStarted) return;
+      loadStarted = true;
+      const s = document.createElement("script");
+      s.src = "/emojis.js";
+      s.onload = () => renderEmojis();
+      document.head.appendChild(s);
+    };
+    emiBtn.addEventListener("click", openModal);
+    document.getElementById("emoji-close").addEventListener("click", closeModal);
+    document.getElementById("emoji-clear").addEventListener("click", () => { setEmoji(""); closeModal(); });
+    modal.addEventListener("click", (ev) => { if (ev.target === modal) closeModal(); });
+    search.addEventListener("input", () => filter(search.value));
+    document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !modal.hidden) closeModal(); });
+
+    f.addEventListener("submit", (ev) => {
+      ev.preventDefault();
       const day = i.value.trim();
       if (!day) return;
       const ans = ai.value.trim();
+      const emo = emi.value.trim();
       const parts = [];
       if (ans && ans.toUpperCase() !== "YES") parts.push("answer=" + encodeURIComponent(ans));
+      if (emo) parts.push("emoji=" + encodeURIComponent(emo));
       if (ci.value.toLowerCase() !== defaults.accent.toLowerCase()) parts.push("color=" + encodeURIComponent(ci.value));
       if (qci.value.toLowerCase() !== defaults.fg.toLowerCase()) parts.push("qcolor=" + encodeURIComponent(qci.value));
       if (bgi.value.toLowerCase() !== defaults.bg.toLowerCase()) parts.push("bg=" + encodeURIComponent(bgi.value));
