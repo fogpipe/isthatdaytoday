@@ -18,6 +18,7 @@
             wrangler
             just
             opentofu
+            caddy
           ];
         };
       }

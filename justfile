@@ -1,6 +1,9 @@
 default:
     @just --list
 
+start:
+    caddy run --config Caddyfile
+
 release:
     wrangler pages deploy public --project-name=isthatdaytoday
 

@@ -1,0 +1,5 @@
+:8788 {
+	root * public
+	try_files {path} /index.html
+	file_server
+}
