@@ -62,12 +62,26 @@
     padding: 0.1em 0.35em;
     border-radius: 0.25rem;
   }
-  .hint a {
-    color: inherit;
-    text-decoration: none;
+  .hint-label {
+    margin: 0 0 0.75rem;
   }
-  .hint a:hover code {
-    background: color-mix(in srgb, var(--accent) 25%, transparent);
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .preset {
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .preset:hover {
+    filter: brightness(1.08);
   }
   .day-form {
     margin-top: 2rem;
@@ -165,9 +179,10 @@
   </div>
   <button type="submit">Go</button>
 </form>
-<p class="hint" id="h" hidden>
-  Try <a href="/workout"><code>isthatday.today/workout</code></a>
-</p>
+<div class="hint" id="h" hidden>
+  <p class="hint-label">Try a preset:</p>
+  <div class="presets" id="presets"></div>
+</div>
 <script>
   const params = new URLSearchParams(location.search);
   const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
@@ -207,13 +222,32 @@
     a.hidden = true;
     h.hidden = false;
     f.hidden = false;
-    const samples = ["workout", "pizza", "taco", "pancake", "pajama"];
-    i.value = samples[Math.floor(Math.random() * samples.length)];
-    ci.value = defaults.accent;
-    qci.value = defaults.fg;
-    bgi.value = defaults.bg;
-    i.focus();
-    i.select();
+    const presets = [
+      { day: "workout", answer: "YES", color: defaults.accent, qcolor: defaults.fg, bg: defaults.bg },
+      { day: "pizza", answer: "YES", color: "#dc2626", qcolor: "#3f2a14", bg: "#fdf6e3" },
+      { day: "monday", answer: "NO", color: "#64748b", qcolor: "#cbd5e1", bg: "#1e293b" },
+      { day: "taco", answer: "SÍ", color: "#ea580c", qcolor: "#3f2a14", bg: "#fef3c7" },
+      { day: "pajama", answer: "ALWAYS", color: "#a78bfa", qcolor: "#c7d2fe", bg: "#1e1b4b" },
+    ];
+    const apply = (p) => {
+      i.value = p.day;
+      ai.value = p.answer;
+      ci.value = p.color;
+      qci.value = p.qcolor;
+      bgi.value = p.bg;
+    };
+    apply(presets[0]);
+    const presetsEl = document.getElementById("presets");
+    for (const p of presets) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "preset";
+      btn.textContent = p.day;
+      btn.style.background = p.bg;
+      btn.style.color = p.color;
+      btn.addEventListener("click", () => apply(p));
+      presetsEl.appendChild(btn);
+    }
     f.addEventListener("submit", (e) => {
       e.preventDefault();
       const day = i.value.trim();
