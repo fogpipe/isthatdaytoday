@@ -115,6 +115,22 @@
   .day-form input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
   .day-form input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0.4rem; }
   .day-form input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0.4rem; }
+  .day-form button {
+    font: inherit;
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    border: 0;
+    border-radius: 0.4rem;
+    padding: 0.7rem 2.5rem;
+    cursor: pointer;
+  }
+  .day-form button:hover {
+    filter: brightness(1.05);
+  }
 </style>
 </head>
 <body>
@@ -141,7 +157,7 @@
     <label for="bgi">Background</label>
     <input id="bgi" type="color">
   </div>
-  <button type="submit" hidden></button>
+  <button type="submit">Go</button>
 </form>
 <p class="hint" id="h" hidden>
   Try <a href="/workout"><code>isthatday.today/workout</code></a>
