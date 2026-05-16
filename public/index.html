@@ -113,8 +113,14 @@
     cursor: pointer;
   }
   .day-form input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-  .day-form input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0.4rem; }
-  .day-form input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0.4rem; }
+  .day-form input[type="color"]::-webkit-color-swatch {
+    border: 2px solid color-mix(in srgb, var(--fg) 40%, transparent);
+    border-radius: 0.4rem;
+  }
+  .day-form input[type="color"]::-moz-color-swatch {
+    border: 2px solid color-mix(in srgb, var(--fg) 40%, transparent);
+    border-radius: 0.4rem;
+  }
   .day-form button {
     font: inherit;
     font-size: clamp(1rem, 3vw, 1.25rem);
