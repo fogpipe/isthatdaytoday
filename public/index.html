@@ -104,6 +104,17 @@
   .day-form input:focus {
     border-bottom-color: var(--accent);
   }
+  .day-form input[type="color"] {
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .day-form input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  .day-form input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0.4rem; }
+  .day-form input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0.4rem; }
 </style>
 </head>
 <body>
@@ -118,6 +129,18 @@
     <label for="ai">Answer</label>
     <input id="ai" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" value="YES">
   </div>
+  <div class="field">
+    <label for="ci">Answer color</label>
+    <input id="ci" type="color">
+  </div>
+  <div class="field">
+    <label for="qci">Question color</label>
+    <input id="qci" type="color">
+  </div>
+  <div class="field">
+    <label for="bgi">Background</label>
+    <input id="bgi" type="color">
+  </div>
   <button type="submit" hidden></button>
 </form>
 <p class="hint" id="h" hidden>
@@ -128,6 +151,9 @@
   const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
   const name = fromPath.replace(/[-_+]+/g, " ").trim();
   const answer = (params.get("answer") ?? "YES").toUpperCase();
+  const color = params.get("color");
+  const qcolor = params.get("qcolor");
+  const bg = params.get("bg");
 
   const q = document.getElementById("q");
   const a = document.getElementById("a");
@@ -135,11 +161,25 @@
   const f = document.getElementById("f");
   const i = document.getElementById("i");
   const ai = document.getElementById("ai");
+  const ci = document.getElementById("ci");
+  const qci = document.getElementById("qci");
+  const bgi = document.getElementById("bgi");
+
+  const root = document.documentElement;
+  const cs = getComputedStyle(root);
+  const defaults = {
+    accent: cs.getPropertyValue("--accent").trim(),
+    fg: cs.getPropertyValue("--fg").trim(),
+    bg: cs.getPropertyValue("--bg").trim(),
+  };
 
   if (name) {
     q.textContent = `Is it ${name} day today?`;
     a.textContent = answer;
     document.title = `Is it ${name} day today? ${answer}`;
+    if (color) root.style.setProperty("--accent", color);
+    if (qcolor) root.style.setProperty("--fg", qcolor);
+    if (bg) root.style.setProperty("--bg", bg);
   } else {
     q.hidden = true;
     a.hidden = true;
@@ -147,6 +187,9 @@
     f.hidden = false;
     const samples = ["workout", "pizza", "taco", "pancake", "pajama"];
     i.value = samples[Math.floor(Math.random() * samples.length)];
+    ci.value = defaults.accent;
+    qci.value = defaults.fg;
+    bgi.value = defaults.bg;
     i.focus();
     i.select();
     f.addEventListener("submit", (e) => {
@@ -154,7 +197,12 @@
       const day = i.value.trim();
       if (!day) return;
       const ans = ai.value.trim();
-      const qs = ans && ans.toUpperCase() !== "YES" ? "?answer=" + encodeURIComponent(ans) : "";
+      const parts = [];
+      if (ans && ans.toUpperCase() !== "YES") parts.push("answer=" + encodeURIComponent(ans));
+      if (ci.value.toLowerCase() !== defaults.accent.toLowerCase()) parts.push("color=" + encodeURIComponent(ci.value));
+      if (qci.value.toLowerCase() !== defaults.fg.toLowerCase()) parts.push("qcolor=" + encodeURIComponent(qci.value));
+      if (bgi.value.toLowerCase() !== defaults.bg.toLowerCase()) parts.push("bg=" + encodeURIComponent(bgi.value));
+      const qs = parts.length ? "?" + parts.join("&") : "";
       location.href = "/" + encodeURIComponent(day) + qs;
     });
   }
