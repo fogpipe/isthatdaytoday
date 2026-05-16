@@ -97,15 +97,18 @@
   const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
   const raw = (fromQuery ?? fromPath).replace(/[-_+]+/g, " ").trim();
   const name = raw.toLowerCase();
+  const answer = (params.get("answer") ?? "YES").toUpperCase();
 
   const q = document.getElementById("q");
+  const a = document.getElementById("a");
   const h = document.getElementById("h");
   const f = document.getElementById("f");
   const i = document.getElementById("i");
 
   if (name) {
     q.textContent = `Is it ${name} day today?`;
-    document.title = `Is it ${name} day today? YES`;
+    a.textContent = answer;
+    document.title = `Is it ${name} day today? ${answer}`;
   } else {
     h.hidden = false;
     f.hidden = false;
