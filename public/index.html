@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Is that day today?</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="description" content="The eternal question, answered with confidence.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="isthatday.today">
+<meta property="og:title" content="Is that day today?">
+<meta property="og:description" content="The eternal question, answered with confidence.">
+<meta property="og:url" content="https://isthatday.today/">
+<meta property="og:image" content="https://isthatday.today/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Is that day today?">
+<meta name="twitter:description" content="The eternal question, answered with confidence.">
+<meta name="twitter:image" content="https://isthatday.today/og.png">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1833872657216386"
      crossorigin="anonymous"></script>
 <script defer src="https://cloud.umami.is/script.js" data-website-id="3d84798e-202b-4043-8522-130de01b7bb3" data-domains="isthatday.today,www.isthatday.today"></script>
@@ -367,8 +381,6 @@
     if (bg) root.style.setProperty("--bg", bg);
     const s = document.getElementById("s");
     s.hidden = false;
-    const shareTitle = `${emoji ? emoji + " " : ""}Is it ${name} day today?`;
-    const shareText = `${shareTitle} ${answer}`;
     const copyFallback = (text) => {
       const ta = document.createElement("textarea");
       ta.value = text;
@@ -395,7 +407,7 @@
       const url = location.href;
       if (navigator.share) {
         try {
-          await navigator.share({ title: shareTitle, text: shareText, url });
+          await navigator.share({ url });
           return;
         } catch (err) {
           if (err && err.name === "AbortError") return;
