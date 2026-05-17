@@ -4,11 +4,13 @@ let fontsPromise = null;
 const fonts = () => {
   if (!fontsPromise) {
     fontsPromise = Promise.all([
-      loadGoogleFont({ family: "Inter", weight: 500 }),
-      loadGoogleFont({ family: "Inter", weight: 900 }),
-    ]).then(([medium, black]) => [
-      { name: "Inter", data: medium, weight: 500, style: "normal" },
-      { name: "Inter", data: black, weight: 900, style: "normal" },
+      loadGoogleFont({ family: "Fraunces", weight: 500 }),
+      loadGoogleFont({ family: "Fraunces", weight: 900 }),
+      loadGoogleFont({ family: "JetBrains Mono", weight: 500 }),
+    ]).then(([medium, black, mono]) => [
+      { name: "Fraunces", data: medium, weight: 500, style: "normal" },
+      { name: "Fraunces", data: black, weight: 900, style: "normal" },
+      { name: "JetBrains Mono", data: mono, weight: 500, style: "normal" },
     ]);
   }
   return fontsPromise;
@@ -29,17 +31,23 @@ export const onRequest = async (ctx) => {
   const fg = p.get("qcolor") || "#1a1a1a";
   const bg = p.get("bg") || "#fafaf7";
 
-  const question = day ? `Is it ${day} day today?` : "Is it ___ day today?";
   const answerSize = fitAnswer(answer);
+  const questionNode = day
+    ? `<div style="display:flex;font-size:64px;font-weight:500;line-height:1.1;letter-spacing:-0.005em;">Is it ${day} day today?</div>`
+    : `<div style="display:flex;align-items:baseline;gap:18px;font-size:64px;font-weight:500;line-height:1.1;letter-spacing:-0.005em;">
+        <span>Is it</span>
+        <span style="opacity:0.38;">?</span>
+        <span>day today?</span>
+      </div>`;
 
   const html = `
-    <div style="display:flex;flex-direction:column;width:1200px;height:630px;background:${bg};color:${fg};font-family:Inter;padding:50px 60px 36px;">
+    <div style="display:flex;flex-direction:column;width:1200px;height:630px;background:${bg};color:${fg};font-family:Fraunces;padding:50px 60px 36px;">
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;">
         ${emoji ? `<div style="display:flex;font-size:120px;line-height:1;margin-bottom:20px;">${emoji}</div>` : ""}
-        <div style="display:flex;font-size:60px;font-weight:500;line-height:1;">${question}</div>
-        <div style="display:flex;font-size:${answerSize}px;font-weight:900;line-height:0.95;color:${accent};letter-spacing:-0.035em;margin-top:24px;">${answer}</div>
+        ${questionNode}
+        <div style="display:flex;font-size:${answerSize}px;font-weight:900;line-height:0.92;color:${accent};letter-spacing:-0.04em;margin-top:28px;">${answer}</div>
       </div>
-      <div style="display:flex;justify-content:center;font-size:22px;font-weight:500;opacity:0.42;letter-spacing:0.02em;">isthatday.today</div>
+      <div style="display:flex;justify-content:center;font-family:'JetBrains Mono';font-size:16px;font-weight:500;opacity:0.5;letter-spacing:0.22em;">ISTHATDAY.TODAY</div>
     </div>
   `;
 
