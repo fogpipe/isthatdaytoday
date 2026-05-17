@@ -294,6 +294,62 @@
     opacity: 0.5;
     padding: 1rem;
   }
+  .site-footer {
+    position: fixed;
+    bottom: 0.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    font-size: 0.8rem;
+    opacity: 0.55;
+  }
+  .link-btn {
+    font: inherit;
+    font-size: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--fg) 40%, transparent);
+  }
+  .link-btn:hover {
+    opacity: 0.8;
+  }
+  .modal-text {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+  .modal-title {
+    margin: 0;
+    font-size: 1.2rem;
+    flex: 1;
+  }
+  .modal-body {
+    overflow-y: auto;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    text-align: left;
+  }
+  .modal-body p {
+    margin: 0 0 0.8rem;
+  }
+  .modal-body p:last-child {
+    margin-bottom: 0;
+  }
+  .modal-body h3 {
+    margin: 1.2rem 0 0.4rem;
+    font-size: 1rem;
+  }
+  .modal-body a {
+    color: var(--accent);
+  }
+  .modal-body code {
+    font-size: 0.9em;
+  }
 </style>
 </head>
 <body>
@@ -348,6 +404,29 @@
       <button type="button" class="modal-action" id="emoji-close">Close</button>
     </div>
     <div class="emoji-grid" id="emoji-grid"></div>
+  </div>
+</div>
+<footer class="site-footer">
+  <button type="button" class="link-btn" id="privacy-btn">Privacy</button>
+</footer>
+<div class="modal" id="privacy-modal" hidden>
+  <div class="modal-card modal-text" role="dialog" aria-labelledby="privacy-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="privacy-title">Privacy</h2>
+      <button type="button" class="modal-action" data-close="privacy-modal">Close</button>
+    </div>
+    <div class="modal-body">
+      <p>isthatday.today collects no personal information. There are no accounts, no logins, and nothing you type into the form is stored anywhere — the configurator runs entirely in your browser and only produces a shareable URL.</p>
+      <h3>Analytics</h3>
+      <p>Anonymous page-view counts via <a href="https://umami.is" rel="noopener" target="_blank">Umami</a>. Umami is cookieless and does not track individual visitors.</p>
+      <h3>Advertising</h3>
+      <p>Google AdSense serves the ad on day pages. Google may set cookies to show personalized ads if you have consented elsewhere on the web; otherwise you will see non-personalized ads. See <a href="https://policies.google.com/technologies/ads" rel="noopener" target="_blank">Google's ads policy</a>, and <a href="https://www.google.com/settings/ads" rel="noopener" target="_blank">Google's ad settings</a> to manage your preferences.</p>
+      <h3>Third parties</h3>
+      <p>The site loads resources from Cloudflare (hosting and CDN), Umami Cloud (analytics), Google AdSense (advertising), Google Fonts (for the share preview image) and the Twemoji CDN (for emoji in the share preview image).</p>
+      <h3>Contact</h3>
+      <p>Questions or concerns: <a href="mailto:lorentz@rymdkraftverk.com">lorentz@rymdkraftverk.com</a>.</p>
+      <p><small>Last updated 17 May 2026.</small></p>
+    </div>
   </div>
 </div>
 <script>
@@ -563,6 +642,13 @@
       location.href = "/" + encodeURIComponent(day) + qs;
     });
   }
+
+  const privacyModal = document.getElementById("privacy-modal");
+  const closePrivacy = () => { privacyModal.hidden = true; };
+  document.getElementById("privacy-btn").addEventListener("click", () => { privacyModal.hidden = false; });
+  privacyModal.querySelector("[data-close]").addEventListener("click", closePrivacy);
+  privacyModal.addEventListener("click", (ev) => { if (ev.target === privacyModal) closePrivacy(); });
+  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !privacyModal.hidden) closePrivacy(); });
 </script>
 </body>
 </html>
