@@ -675,7 +675,11 @@
 
   if (name) {
     document.body.classList.add("view-answer");
-    document.getElementById("ql").hidden = false;
+    const ql = document.getElementById("ql");
+    ql.hidden = false;
+    const editParams = new URLSearchParams(params);
+    editParams.set("day", name);
+    ql.href = "/?" + editParams.toString();
     a.hidden = false;
     q.textContent = `Is it ${name} day today?`;
     a.textContent = answer;
@@ -786,7 +790,15 @@
       bgi.value = p.bg;
       liveApply();
     };
-    apply(presets[0]);
+    const initial = params.has("day") ? {
+      day: params.get("day") ?? "",
+      answer: (params.get("answer") ?? "YES").toUpperCase(),
+      emoji: params.get("emoji") ?? "",
+      color: params.get("color") ?? defaults.accent,
+      qcolor: params.get("qcolor") ?? defaults.fg,
+      bg: params.get("bg") ?? defaults.bg,
+    } : presets[0];
+    apply(initial);
 
     const presetsEl = document.getElementById("presets");
     for (const p of presets) {
