@@ -17,12 +17,15 @@ const setContent = (value) => ({
   element(el) { el.setAttribute("content", value); },
 });
 
+const RESERVED = new Set(["/privacy", "/privacy.html"]);
+
 export const onRequest = async (ctx) => {
   const response = await ctx.next();
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("text/html")) return response;
 
   const url = new URL(ctx.request.url);
+  if (RESERVED.has(url.pathname)) return response;
   const day = parseDay(url.pathname);
   if (!day) return response;
 
