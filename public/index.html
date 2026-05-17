@@ -96,6 +96,10 @@
     border-color: var(--accent);
     color: var(--accent);
   }
+  .ad {
+    margin-top: 2.5rem;
+    width: min(400px, 90vw);
+  }
   code {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     background: color-mix(in srgb, var(--fg) 10%, transparent);
@@ -297,6 +301,14 @@
 <h1 class="question" id="q">Is it day today?</h1>
 <p class="answer" id="a">YES</p>
 <button class="share" id="s" type="button" hidden>Share</button>
+<div class="ad" id="ad" hidden>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-1833872657216386"
+       data-ad-slot="5919153076"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
 <form class="day-form" id="f" hidden>
   <div class="field">
     <label for="i">Day</label>
@@ -381,6 +393,9 @@
     if (bg) root.style.setProperty("--bg", bg);
     const s = document.getElementById("s");
     s.hidden = false;
+    const ad = document.getElementById("ad");
+    ad.hidden = false;
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
     const copyFallback = (text) => {
       const ta = document.createElement("textarea");
       ta.value = text;
