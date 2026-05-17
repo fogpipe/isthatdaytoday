@@ -1,4 +1,4 @@
-:8788 {
+:{$PORT} {
 	root * public
 	try_files {path} {path}.html /index.html
 	file_server
