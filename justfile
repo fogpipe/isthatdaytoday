@@ -4,6 +4,9 @@ default:
 start:
     caddy run --config Caddyfile
 
+status:
+    ./scripts/status.sh
+
 deps:
     deno install --node-modules-dir=auto
 
