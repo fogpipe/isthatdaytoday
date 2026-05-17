@@ -13,6 +13,10 @@ const ogImageUrl = (origin, day, params) => {
   return `${origin}/og.png?${og.toString()}`;
 };
 
+const setContent = (value) => ({
+  element(el) { el.setAttribute("content", value); },
+});
+
 export const onRequest = async (ctx) => {
   const response = await ctx.next();
   const contentType = response.headers.get("content-type") || "";
@@ -32,13 +36,13 @@ export const onRequest = async (ctx) => {
 
   return new HTMLRewriter()
     .on("title", { element(el) { el.setInnerContent(title); } })
-    .on('meta[name="description"]', { element(el) { el.setAttribute("content", desc); } })
-    .on('meta[property="og:title"]', { element(el) { el.setAttribute("content", title); } })
-    .on('meta[property="og:description"]', { element(el) { el.setAttribute("content", desc); } })
-    .on('meta[property="og:url"]', { element(el) { el.setAttribute("content", url.toString()); } })
-    .on('meta[property="og:image"]', { element(el) { el.setAttribute("content", image); } })
-    .on('meta[name="twitter:title"]', { element(el) { el.setAttribute("content", title); } })
-    .on('meta[name="twitter:description"]', { element(el) { el.setAttribute("content", desc); } })
-    .on('meta[name="twitter:image"]', { element(el) { el.setAttribute("content", image); } })
+    .on('meta[name="description"]', setContent(desc))
+    .on('meta[property="og:title"]', setContent(title))
+    .on('meta[property="og:description"]', setContent(desc))
+    .on('meta[property="og:url"]', setContent(url.toString()))
+    .on('meta[property="og:image"]', setContent(image))
+    .on('meta[name="twitter:title"]', setContent(title))
+    .on('meta[name="twitter:description"]', setContent(desc))
+    .on('meta[name="twitter:image"]', setContent(image))
     .transform(response);
 };
