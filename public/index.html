@@ -673,6 +673,15 @@
     bg: toHex(cs.getPropertyValue("--bg")),
   };
 
+  const faviconLink = document.querySelector("link[rel='icon']");
+  const setFavicon = ({ emoji, accent, bg }) => {
+    const svg = emoji
+      ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="50%" y="54" text-anchor="middle" font-size="54">${emoji}</text></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${accent}"/><text x="50%" y="48" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="900" font-size="56" fill="${bg}">Y</text></svg>`;
+    faviconLink.type = "image/svg+xml";
+    faviconLink.href = "data:image/svg+xml," + encodeURIComponent(svg);
+  };
+
   if (name) {
     document.body.classList.add("view-answer");
     const ql = document.getElementById("ql");
@@ -691,6 +700,7 @@
     if (color) root.style.setProperty("--accent", color);
     if (qcolor) root.style.setProperty("--fg", qcolor);
     if (bg) root.style.setProperty("--bg", bg);
+    setFavicon({ emoji, accent: color || defaults.accent, bg: bg || defaults.bg });
     const s = document.getElementById("s");
     s.hidden = false;
     const ad = document.getElementById("ad");
@@ -746,6 +756,7 @@
       emi.value = val;
       emiBtn.textContent = val || "＋ emoji";
       emiBtn.classList.toggle("empty", !val);
+      setFavicon({ emoji: val, accent: ci.value || defaults.accent, bg: bgi.value || defaults.bg });
     };
 
     const swatchBtns = {
@@ -760,6 +771,7 @@
       swatchBtns.qci.style.background = qci.value;
       swatchBtns.ci.style.background = ci.value;
       swatchBtns.bgi.style.background = bgi.value;
+      setFavicon({ emoji: emi.value, accent: ci.value, bg: bgi.value });
     };
     for (const [key, btn] of Object.entries(swatchBtns)) {
       const input = { qci, ci, bgi }[key];
