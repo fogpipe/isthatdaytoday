@@ -6,11 +6,24 @@ const parseDay = (pathname) => {
 const ogImageUrl = (origin, day, params) => {
   const og = new URLSearchParams();
   og.set("day", day);
-  for (const k of ["answer", "emoji", "color", "qcolor", "bg"]) {
+  for (const k of ["answer", "answer2", "date", "emoji", "color", "qcolor", "bg"]) {
     const v = params.get(k);
     if (v) og.set(k, v);
   }
   return `${origin}/og.png?${og.toString()}`;
+};
+
+const todayUTCMMDD = () => {
+  const now = new Date();
+  return `${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
+};
+
+const resolveAnswer = (params) => {
+  const answer = (params.get("answer") ?? "YES").toUpperCase();
+  const answer2 = (params.get("answer2") ?? "").toUpperCase();
+  const date = params.get("date") ?? "";
+  if (!/^\d{2}-\d{2}$/.test(date) || !answer2) return answer;
+  return todayUTCMMDD() === date ? answer : answer2;
 };
 
 const setContent = (value) => ({
@@ -30,7 +43,7 @@ export const onRequest = async (ctx) => {
   if (!day) return response;
 
   const params = url.searchParams;
-  const answer = (params.get("answer") ?? "YES").toUpperCase();
+  const answer = resolveAnswer(params);
   const emoji = params.get("emoji") ?? "";
 
   const title = `${emoji ? emoji + " " : ""}Is it ${day} day today? ${answer}`;

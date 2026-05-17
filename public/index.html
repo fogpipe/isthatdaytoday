@@ -249,6 +249,89 @@
     border-radius: 0.4rem;
   }
 
+  .cond-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    margin-top: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+  }
+  .cond-label {
+    letter-spacing: 0.05em;
+  }
+  .cond-sep { color: var(--ink-faint); }
+  .date-input {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--fg);
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid color-mix(in srgb, var(--fg) 25%, transparent);
+    padding: 0.15rem 0.25rem;
+    outline: none;
+    color-scheme: light dark;
+  }
+  .date-input:focus { border-bottom-color: var(--accent); }
+  .answer-input-small {
+    font-family: var(--display);
+    font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--accent);
+    background: transparent;
+    border: 0;
+    outline: none;
+    text-align: center;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    min-width: 2ch;
+    max-width: 8ch;
+    field-sizing: content;
+    padding: 0 0.15em;
+    caret-color: var(--accent);
+    border-bottom: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+  .answer-input-small:focus { border-bottom-color: var(--accent); }
+  .cond-remove {
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid var(--ink-faint);
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.25rem;
+  }
+  .cond-remove:hover { border-color: var(--fg); color: var(--fg); }
+  .cond-toggle {
+    align-self: center;
+    margin-top: 0.75rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px dashed var(--ink-faint);
+    border-radius: 999px;
+    padding: 0.45rem 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .cond-toggle:hover { border-color: var(--fg); color: var(--fg); }
+
   .controls {
     display: flex;
     flex-wrap: wrap;
@@ -585,6 +668,16 @@
     </h1>
 
     <input id="ai" class="answer-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" value="YES" aria-label="Answer">
+
+    <div class="cond-row" id="cond-row" hidden>
+      <span class="cond-label">on</span>
+      <input id="di" class="date-input" type="date" aria-label="Date">
+      <span class="cond-sep">·</span>
+      <span class="cond-label">otherwise</span>
+      <input id="ai2" class="answer-input-small" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" value="NO" aria-label="Answer when date doesn't match">
+      <button type="button" class="cond-remove" id="cond-remove" aria-label="Remove date condition">×</button>
+    </div>
+    <button type="button" class="cond-toggle" id="cond-toggle">+ date condition</button>
   </form>
 
   <div class="controls">
@@ -638,10 +731,22 @@
   const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
   const name = fromPath.replace(/[-_+]+/g, " ").trim();
   const answer = (params.get("answer") ?? "YES").toUpperCase();
+  const answer2 = (params.get("answer2") ?? "").toUpperCase();
+  const date = params.get("date") ?? "";
   const emoji = params.get("emoji") ?? "";
   const color = params.get("color");
   const qcolor = params.get("qcolor");
   const bg = params.get("bg");
+
+  const todayMMDD = () => {
+    const now = new Date();
+    return `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  };
+  const dateValid = /^\d{2}-\d{2}$/.test(date);
+  const conditional = dateValid && answer2;
+  const resolvedAnswer = conditional
+    ? (todayMMDD() === date ? answer : answer2)
+    : answer;
 
   const q = document.getElementById("q");
   const a = document.getElementById("a");
@@ -691,12 +796,12 @@
     ql.href = "/?" + editParams.toString();
     a.hidden = false;
     q.textContent = `Is it ${name} day today?`;
-    a.textContent = answer;
+    a.textContent = resolvedAnswer;
     if (emoji) {
       e.textContent = emoji;
       e.hidden = false;
     }
-    document.title = `${emoji ? emoji + " " : ""}Is it ${name} day today? ${answer}`;
+    document.title = `${emoji ? emoji + " " : ""}Is it ${name} day today? ${resolvedAnswer}`;
     if (color) root.style.setProperty("--accent", color);
     if (qcolor) root.style.setProperty("--fg", qcolor);
     if (bg) root.style.setProperty("--bg", bg);
@@ -759,6 +864,33 @@
       setFavicon({ emoji: val, accent: ci.value || defaults.accent, bg: bgi.value || defaults.bg });
     };
 
+    const di = document.getElementById("di");
+    const ai2 = document.getElementById("ai2");
+    const condRow = document.getElementById("cond-row");
+    const condToggle = document.getElementById("cond-toggle");
+    const condRemove = document.getElementById("cond-remove");
+    const currentYear = new Date().getFullYear();
+    const mmddToInput = (mmdd) => `${currentYear}-${mmdd}`;
+    const inputToMMDD = (val) => val ? val.slice(5) : "";
+    const setConditional = (mmdd, alt) => {
+      const on = !!mmdd;
+      condRow.hidden = !on;
+      condToggle.hidden = on;
+      if (on) {
+        di.value = mmddToInput(mmdd);
+        ai2.value = (alt || "NO").toUpperCase();
+      } else {
+        di.value = "";
+        ai2.value = "NO";
+      }
+    };
+    condToggle.addEventListener("click", () => {
+      const now = new Date();
+      const mmdd = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      setConditional(mmdd, ai2.value || "NO");
+    });
+    condRemove.addEventListener("click", () => setConditional("", ""));
+
     const swatchBtns = {
       qci: document.getElementById("qci-btn"),
       ci: document.getElementById("ci-btn"),
@@ -792,6 +924,9 @@
       { day: "leg", answer: "YES", emoji: "🦵", color: "#0891b2", qcolor: "#164e63", bg: "#ecfeff" },
       { day: "mercury retrograde", answer: "NO", emoji: "", color: "#991b1b", qcolor: "#2a1810", bg: "#f0e6d2" },
       { day: "taco", answer: "SÍ", emoji: "🌮", color: "#ea580c", qcolor: "#3f2a14", bg: "#fef3c7" },
+      { day: "valentines", answer: "YES", answer2: "NO", date: "02-14", emoji: "💝", color: "#e11d48", qcolor: "#881337", bg: "#fff1f2" },
+      { day: "kanelbullens", answer: "JA", answer2: "NEJ", date: "10-04", emoji: "🥐", color: "#a16207", qcolor: "#451a03", bg: "#fef3c7" },
+      { day: "syttende mai", answer: "JA", answer2: "NEI", date: "05-17", emoji: "🇳🇴", color: "#ba0c2f", qcolor: "#00205b", bg: "#f5f5f0" },
     ];
     const apply = (p) => {
       i.value = p.day;
@@ -800,6 +935,7 @@
       ci.value = p.color;
       qci.value = p.qcolor;
       bgi.value = p.bg;
+      setConditional(p.date || "", p.answer2 || "");
       liveApply();
     };
     const initial = params.has("day") ? {
@@ -809,6 +945,8 @@
       color: params.get("color") ?? defaults.accent,
       qcolor: params.get("qcolor") ?? defaults.fg,
       bg: params.get("bg") ?? defaults.bg,
+      date: /^\d{2}-\d{2}$/.test(params.get("date") ?? "") ? params.get("date") : "",
+      answer2: (params.get("answer2") ?? "").toUpperCase(),
     } : presets[0];
     apply(initial);
 
@@ -915,12 +1053,19 @@
       if (!day) { i.focus(); return; }
       const ans = ai.value.trim();
       const emo = emi.value.trim();
+      const mmdd = !condRow.hidden ? inputToMMDD(di.value) : "";
+      const alt = !condRow.hidden ? ai2.value.trim() : "";
+      const condActive = /^\d{2}-\d{2}$/.test(mmdd) && alt;
       const parts = [];
       if (ans && ans.toUpperCase() !== "YES") parts.push("answer=" + encodeURIComponent(ans));
       if (emo) parts.push("emoji=" + encodeURIComponent(emo));
       if (ci.value.toLowerCase() !== defaults.accent.toLowerCase()) parts.push("color=" + encodeURIComponent(ci.value));
       if (qci.value.toLowerCase() !== defaults.fg.toLowerCase()) parts.push("qcolor=" + encodeURIComponent(qci.value));
       if (bgi.value.toLowerCase() !== defaults.bg.toLowerCase()) parts.push("bg=" + encodeURIComponent(bgi.value));
+      if (condActive) {
+        parts.push("date=" + encodeURIComponent(mmdd));
+        parts.push("answer2=" + encodeURIComponent(alt));
+      }
       const qs = parts.length ? "?" + parts.join("&") : "";
       location.href = "/" + encodeURIComponent(day) + qs;
     });

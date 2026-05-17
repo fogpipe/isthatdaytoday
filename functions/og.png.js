@@ -21,11 +21,22 @@ const fitAnswer = (text) => {
   return Math.min(280, sized);
 };
 
+const todayUTCMMDD = () => {
+  const now = new Date();
+  return `${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
+};
+
 export const onRequest = async (ctx) => {
   const url = new URL(ctx.request.url);
   const p = url.searchParams;
   const day = (p.get("day") || "").trim();
-  const answer = (p.get("answer") || "YES").toUpperCase();
+  const rawAnswer = (p.get("answer") || "YES").toUpperCase();
+  const rawAnswer2 = (p.get("answer2") || "").toUpperCase();
+  const date = p.get("date") || "";
+  const conditional = /^\d{2}-\d{2}$/.test(date) && rawAnswer2;
+  const answer = conditional
+    ? (todayUTCMMDD() === date ? rawAnswer : rawAnswer2)
+    : rawAnswer;
   const emoji = p.get("emoji") || "";
   const accent = p.get("color") || "#16a34a";
   const fg = p.get("qcolor") || "#1a1a1a";
@@ -57,6 +68,9 @@ export const onRequest = async (ctx) => {
     fonts: await fonts(),
     emoji: "twemoji",
   });
-  response.headers.set("cache-control", "public, max-age=31536000, immutable");
+  response.headers.set(
+    "cache-control",
+    conditional ? "public, max-age=3600" : "public, max-age=31536000, immutable",
+  );
   return response;
 };
