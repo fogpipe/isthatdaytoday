@@ -47,10 +47,12 @@ export const onRequest = async (ctx) => {
     </div>
   `;
 
-  return new ImageResponse(html, {
+  const response = new ImageResponse(html, {
     width: 1200,
     height: 630,
     fonts: await fonts(),
     emoji: "twemoji",
   });
+  response.headers.set("cache-control", "public, max-age=31536000, immutable");
+  return response;
 };
