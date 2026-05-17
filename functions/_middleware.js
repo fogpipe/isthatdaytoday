@@ -49,9 +49,12 @@ export const onRequest = async (ctx) => {
   const title = `${emoji ? emoji + " " : ""}Is it ${day} day today? ${answer}`;
   const desc = `Today's verdict: ${answer}.`;
   const image = ogImageUrl(url.origin, day, params);
+  const slug = day.split(/\s+/).map(encodeURIComponent).join("-");
+  const canonical = `${url.origin}/${slug}`;
 
   return new HTMLRewriter()
     .on("title", { element(el) { el.setInnerContent(title); } })
+    .on('link[rel="canonical"]', { element(el) { el.setAttribute("href", canonical); } })
     .on('meta[name="description"]', setContent(desc))
     .on('meta[property="og:title"]', setContent(title))
     .on('meta[property="og:description"]', setContent(desc))
