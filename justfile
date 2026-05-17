@@ -4,7 +4,10 @@ default:
 start:
     caddy run --config Caddyfile
 
-release:
+deps:
+    deno install --node-modules-dir=auto
+
+release: deps
     wrangler pages deploy public --project-name=isthatdaytoday
 
 tf *args:

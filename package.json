@@ -1,0 +1,8 @@
+{
+  "name": "isthatdaytoday",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "workers-og": "^0.0.27"
+  }
+}
