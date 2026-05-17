@@ -812,7 +812,8 @@
       presetsEl.appendChild(btn);
     }
     document.getElementById("random-btn").addEventListener("click", () => {
-      apply(presets[Math.floor(Math.random() * presets.length)]);
+      const pool = presets.filter((p) => p.day !== i.value);
+      apply(pool[Math.floor(Math.random() * pool.length)]);
     });
 
     const modal = document.getElementById("emoji-modal");
