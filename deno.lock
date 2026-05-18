@@ -1,9 +1,13 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@cloudflare/workers-types@^4.20251101.0": "4.20260508.1",
     "npm:workers-og@^0.0.27": "0.0.27"
   },
   "npm": {
+    "@cloudflare/workers-types@4.20260508.1": {
+      "integrity": "sha512-0KNR+UkrYJYmtyQ5tOjUT/wt/U34FuE4Y8FLSbPMwFrGQQpmvR9wKghwRkL4d28y5t9jI9cvGqeAoo/cerTnCQ=="
+    },
     "@resvg/resvg-wasm@2.4.0": {
       "integrity": "sha512-C7c51Nn4yTxXFKvgh2txJFNweaVcfUPQxwEUFw4aWsCmfiBDJsTSwviIF8EcwjQ6k8bPyMWCl1vw4BdxE569Cg=="
     },
@@ -124,6 +128,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@cloudflare/workers-types@^4.20251101.0",
         "npm:workers-og@^0.0.27"
       ]
     }

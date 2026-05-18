@@ -1,32 +1,30 @@
+/// <reference types="@cloudflare/workers-types" />
+
 import { ImageResponse, loadGoogleFont } from "workers-og";
 
-let fontsPromise = null;
-const fonts = () => {
-  if (!fontsPromise) {
-    fontsPromise = Promise.all([
-      loadGoogleFont({ family: "Fraunces", weight: 500 }),
-      loadGoogleFont({ family: "Fraunces", weight: 900 }),
-      loadGoogleFont({ family: "JetBrains Mono", weight: 500 }),
-    ]).then(([medium, black, mono]) => [
-      { name: "Fraunces", data: medium, weight: 500, style: "normal" },
-      { name: "Fraunces", data: black, weight: 900, style: "normal" },
-      { name: "JetBrains Mono", data: mono, weight: 500, style: "normal" },
-    ]);
-  }
-  return fontsPromise;
-};
+const fontsPromise = Promise.all([
+  loadGoogleFont({ family: "Fraunces", weight: 500 }),
+  loadGoogleFont({ family: "Fraunces", weight: 900 }),
+  loadGoogleFont({ family: "JetBrains Mono", weight: 500 }),
+]).then(([medium, black, mono]) => [
+  { name: "Fraunces", data: medium, weight: 500, style: "normal" as const },
+  { name: "Fraunces", data: black, weight: 900, style: "normal" as const },
+  { name: "JetBrains Mono", data: mono, weight: 500, style: "normal" as const },
+]);
 
-const fitAnswer = (text) => {
+const fitAnswer = (text: string) => {
   const sized = Math.floor(1060 / Math.max(text.length, 3) / 0.78);
   return Math.min(280, sized);
 };
 
 const todayUTCMMDD = () => {
   const now = new Date();
-  return `${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
+  return `${String(now.getUTCMonth() + 1).padStart(2, "0")}-${
+    String(now.getUTCDate()).padStart(2, "0")
+  }`;
 };
 
-export const onRequest = async (ctx) => {
+export const onRequest: PagesFunction = async (ctx) => {
   const url = new URL(ctx.request.url);
   const p = url.searchParams;
   const day = (p.get("day") || "").trim();
@@ -34,9 +32,7 @@ export const onRequest = async (ctx) => {
   const rawAnswer2 = (p.get("answer2") || "").toUpperCase();
   const date = p.get("date") || "";
   const conditional = /^\d{2}-\d{2}$/.test(date) && rawAnswer2;
-  const answer = conditional
-    ? (todayUTCMMDD() === date ? rawAnswer : rawAnswer2)
-    : rawAnswer;
+  const answer = conditional ? (todayUTCMMDD() === date ? rawAnswer : rawAnswer2) : rawAnswer;
   const emoji = p.get("emoji") || "";
   const accent = p.get("color") || "#16a34a";
   const fg = p.get("qcolor") || "#1a1a1a";
@@ -54,7 +50,11 @@ export const onRequest = async (ctx) => {
   const html = `
     <div style="display:flex;flex-direction:column;width:1200px;height:630px;background:${bg};color:${fg};font-family:Fraunces;padding:50px 60px 36px;">
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;">
-        ${emoji ? `<div style="display:flex;font-size:120px;line-height:1;margin-bottom:20px;">${emoji}</div>` : ""}
+        ${
+    emoji
+      ? `<div style="display:flex;font-size:120px;line-height:1;margin-bottom:20px;">${emoji}</div>`
+      : ""
+  }
         ${questionNode}
         <div style="display:flex;font-size:${answerSize}px;font-weight:900;line-height:0.92;color:${accent};letter-spacing:-0.04em;margin-top:28px;">${answer}</div>
       </div>
@@ -65,7 +65,7 @@ export const onRequest = async (ctx) => {
   const response = new ImageResponse(html, {
     width: 1200,
     height: 630,
-    fonts: await fonts(),
+    fonts: await fontsPromise,
     emoji: "twemoji",
   });
   response.headers.set(

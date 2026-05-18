@@ -11,6 +11,7 @@ export type Preset =
   | (Base & { date?: never; answer2?: never })
   | (Base & { date: string; answer2: string });
 
+// deno-fmt-ignore
 const presets = [
   { day: "workout", answer: "YES" },
   { day: "pizza", answer: "YES", emoji: "🍕", color: "#dc2626", qcolor: "#3f2a14", bg: "#fdf6e3" },

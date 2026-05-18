@@ -10,6 +10,12 @@ start: build
 status:
     ./scripts/status.sh
 
+static-qa:
+    ./scripts/static-qa.sh
+
+static-fix:
+    ./scripts/static-fix.sh
+
 deps:
     deno install --node-modules-dir=auto
 

@@ -1,5 +1,12 @@
 {
   "compilerOptions": {
     "lib": ["deno.ns", "deno.window", "esnext"]
+  },
+  "fmt": {
+    "include": ["data/", "functions/", "scripts/"],
+    "lineWidth": 100
+  },
+  "lint": {
+    "include": ["data/", "functions/", "scripts/"]
   }
 }
