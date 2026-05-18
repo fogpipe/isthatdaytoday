@@ -1,6 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
 import rawPresets from "../data/presets.ts";
+import { readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
 
 const daySlug = (day: string) => day.split(/\s+/).map(encodeURIComponent).join("-");
 
@@ -26,21 +27,6 @@ const ogImageUrl = (origin: string, day: string, params: URLSearchParams) => {
     if (v) og.set(k, v);
   }
   return `${origin}/og.png?${og.toString()}`;
-};
-
-const todayUTCMMDD = () => {
-  const now = new Date();
-  return `${String(now.getUTCMonth() + 1).padStart(2, "0")}-${
-    String(now.getUTCDate()).padStart(2, "0")
-  }`;
-};
-
-const resolveAnswer = (params: URLSearchParams) => {
-  const answer = (params.get("answer") ?? "YES").toUpperCase();
-  const answer2 = (params.get("answer2") ?? "").toUpperCase();
-  const date = params.get("date") ?? "";
-  if (!/^\d{2}-\d{2}$/.test(date) || !answer2) return answer;
-  return todayUTCMMDD() === date ? answer : answer2;
 };
 
 const setContent = (value: string) => ({
@@ -104,7 +90,7 @@ export const onRequest: PagesFunction = async (ctx) => {
   if (!day) return response;
 
   const params = url.searchParams;
-  const answer = resolveAnswer(params);
+  const answer = resolveAnswer(readConditional(params), todayMMDD(new Date(), true));
   const emoji = params.get("emoji") ?? "";
 
   const titleText = `${emoji ? emoji + " " : ""}Is it ${day} day today? ${answer}`;

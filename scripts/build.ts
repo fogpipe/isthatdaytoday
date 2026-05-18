@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
 
 import presets from "../data/presets.ts";
+import { isConditional, readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
 
 const root = new URL("..", import.meta.url).pathname;
 
@@ -22,17 +23,30 @@ ${sitemapEntries.join("\n")}
 await Deno.writeTextFile(`${root}/public/sitemap.xml`, sitemap);
 
 const rows = presets.map((p) => `      ${JSON.stringify(p)},`).join("\n");
-const block = `// <presets>\n    const rawPresets = [\n${rows}\n    ];\n    // </presets>`;
+const presetBlock = `// <presets>\n    const rawPresets = [\n${rows}\n    ];\n    // </presets>`;
+
+const answerBlock = [
+  "// <answer>",
+  `    const todayMMDD = ${todayMMDD.toString()};`,
+  `    const readConditional = ${readConditional.toString()};`,
+  `    const isConditional = ${isConditional.toString()};`,
+  `    const resolveAnswer = ${resolveAnswer.toString()};`,
+  "    // </answer>",
+].join("\n");
 
 const indexPath = `${root}/public/index.html`;
 const html = await Deno.readTextFile(indexPath);
-const re = /\/\/ <presets>[\s\S]*?\/\/ <\/presets>/;
-if (!re.test(html)) {
+const presetRe = /\/\/ <presets>[\s\S]*?\/\/ <\/presets>/;
+const answerRe = /\/\/ <answer>[\s\S]*?\/\/ <\/answer>/;
+if (!presetRe.test(html)) {
   throw new Error("preset markers not found in public/index.html");
 }
-const updated = html.replace(re, block);
+if (!answerRe.test(html)) {
+  throw new Error("answer markers not found in public/index.html");
+}
+const updated = html.replace(presetRe, presetBlock).replace(answerRe, answerBlock);
 await Deno.writeTextFile(indexPath, updated);
 
 console.log(
-  `built ${sitemapEntries.length} sitemap urls, spliced ${presets.length} presets into index.html`,
+  `built ${sitemapEntries.length} sitemap urls, spliced ${presets.length} presets + resolver into index.html`,
 );

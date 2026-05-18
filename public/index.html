@@ -774,26 +774,34 @@
 </footer>
 
 <script>
+    // <answer>
+    const todayMMDD = (now, utc)=>{
+  const month = utc ? now.getUTCMonth() : now.getMonth();
+  const day = utc ? now.getUTCDate() : now.getDate();
+  return `${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+};
+    const readConditional = (params)=>({
+    answer: (params.get("answer") ?? "YES").toUpperCase(),
+    answer2: (params.get("answer2") ?? "").toUpperCase(),
+    date: params.get("date") ?? ""
+  });
+    const isConditional = (input)=>/^\d{2}-\d{2}$/.test(input.date) && input.answer2.length > 0;
+    const resolveAnswer = (input, mmdd)=>{
+  const valid = /^\d{2}-\d{2}$/.test(input.date) && input.answer2.length > 0;
+  if (!valid) return input.answer;
+  return mmdd === input.date ? input.answer : input.answer2;
+};
+    // </answer>
+
   const params = new URLSearchParams(location.search);
   const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
   const name = fromPath.replace(/[-_+]+/g, " ").trim();
-  const answer = (params.get("answer") ?? "YES").toUpperCase();
-  const answer2 = (params.get("answer2") ?? "").toUpperCase();
-  const date = params.get("date") ?? "";
+  const cond = readConditional(params);
+  const resolvedAnswer = resolveAnswer(cond, todayMMDD(new Date(), false));
   const emoji = params.get("emoji") ?? "";
   const color = params.get("color");
   const qcolor = params.get("qcolor");
   const bg = params.get("bg");
-
-  const todayMMDD = () => {
-    const now = new Date();
-    return `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  };
-  const dateValid = /^\d{2}-\d{2}$/.test(date);
-  const conditional = dateValid && answer2;
-  const resolvedAnswer = conditional
-    ? (todayMMDD() === date ? answer : answer2)
-    : answer;
 
   const q = document.getElementById("q");
   const a = document.getElementById("a");

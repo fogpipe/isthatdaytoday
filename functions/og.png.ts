@@ -2,6 +2,8 @@
 
 import { ImageResponse, loadGoogleFont } from "workers-og";
 
+import { isConditional, readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
+
 const fontsPromise = Promise.all([
   loadGoogleFont({ family: "Fraunces", weight: 500 }),
   loadGoogleFont({ family: "Fraunces", weight: 900 }),
@@ -17,22 +19,13 @@ const fitAnswer = (text: string) => {
   return Math.min(280, sized);
 };
 
-const todayUTCMMDD = () => {
-  const now = new Date();
-  return `${String(now.getUTCMonth() + 1).padStart(2, "0")}-${
-    String(now.getUTCDate()).padStart(2, "0")
-  }`;
-};
-
 export const onRequest: PagesFunction = async (ctx) => {
   const url = new URL(ctx.request.url);
   const p = url.searchParams;
   const day = (p.get("day") || "").trim();
-  const rawAnswer = (p.get("answer") || "YES").toUpperCase();
-  const rawAnswer2 = (p.get("answer2") || "").toUpperCase();
-  const date = p.get("date") || "";
-  const conditional = /^\d{2}-\d{2}$/.test(date) && rawAnswer2;
-  const answer = conditional ? (todayUTCMMDD() === date ? rawAnswer : rawAnswer2) : rawAnswer;
+  const cond = readConditional(p);
+  const answer = resolveAnswer(cond, todayMMDD(new Date(), true));
+  const conditional = isConditional(cond);
   const emoji = p.get("emoji") || "";
   const accent = p.get("color") || "#16a34a";
   const fg = p.get("qcolor") || "#1a1a1a";
