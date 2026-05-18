@@ -2,6 +2,7 @@
 
 import rawPresets from "../data/presets.ts";
 import { mergeConditional, readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
+import { buildUrlParts, stateFromParams } from "../data/url.ts";
 
 const daySlug = (day: string) => day.split(/\s+/).map(encodeURIComponent).join("-");
 
@@ -12,27 +13,22 @@ const parseDay = (pathname: string) => {
   return seg.replace(/[-_+]+/g, " ").trim();
 };
 
-const ogImageUrl = (origin: string, day: string, params: URLSearchParams) => {
-  const og = new URLSearchParams();
-  og.set("day", day);
-  for (const k of ["answer", "answer2", "date", "emoji", "color", "qcolor", "bg"]) {
-    const v = params.get(k);
-    if (v) og.set(k, v);
-  }
-  return `${origin}/og.png?${og.toString()}`;
+const dayUrl = (base: string, day: string, params: URLSearchParams) => {
+  const state = stateFromParams(params);
+  state.day = day;
+  return `${base}?${buildUrlParts(state).join("&")}`;
 };
+
+const ogImageUrl = (origin: string, day: string, params: URLSearchParams) =>
+  dayUrl(`${origin}/og.png`, day, params);
+
+const editHref = (day: string, params: URLSearchParams) => dayUrl("/", day, params);
 
 const setContent = (value: string) => ({
   element(el: Element) {
     el.setAttribute("content", value);
   },
 });
-
-const editHref = (day: string, params: URLSearchParams) => {
-  const qs = new URLSearchParams(params);
-  qs.set("day", day);
-  return `/?${qs.toString()}`;
-};
 
 const jsonLdScript = (day: string, answer: string) => {
   const question = `Is it ${day} day today?`;

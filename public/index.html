@@ -795,6 +795,26 @@
 };
     // </answer>
 
+    // <url>
+    const URL_KEYS = ["day","answer","answer2","date","emoji","color","qcolor","bg"];
+    const buildUrlParts = (state)=>{
+  const parts = [];
+  for (const k of URL_KEYS){
+    const v = state[k];
+    if (v) parts.push(`${k}=${encodeURIComponent(v)}`);
+  }
+  return parts;
+};
+    const stateFromParams = (params)=>{
+  const state = {};
+  for (const k of URL_KEYS){
+    const v = params.get(k);
+    if (v) state[k] = v;
+  }
+  return state;
+};
+    // </url>
+
     // <presets>
     const rawPresets = [
       {"day":"workout","answer":"YES"},
@@ -948,6 +968,7 @@
       emiBtn.textContent = val || "＋ emoji";
       emiBtn.classList.toggle("empty", !val);
       setFavicon({ emoji: val, accent: ci.value || defaults.accent, bg: bgi.value || defaults.bg });
+      syncUrl();
     };
 
     const di = document.getElementById("di");
@@ -969,6 +990,7 @@
         di.value = "";
         ai2.value = "NO";
       }
+      syncUrl();
     };
     condToggle.addEventListener("click", () => {
       const now = new Date();
@@ -976,6 +998,37 @@
       setConditional(mmdd, ai2.value || "NO");
     });
     condRemove.addEventListener("click", () => setConditional("", ""));
+
+    const editorState = (includeDay) => {
+      const state = {};
+      if (includeDay) {
+        const day = i.value.trim();
+        if (day) state.day = day;
+      }
+      const ans = ai.value.trim();
+      if (ans && ans.toUpperCase() !== "YES") state.answer = ans;
+      const emo = emi.value.trim();
+      if (emo) state.emoji = emo;
+      if (ci.value.toLowerCase() !== defaults.accent.toLowerCase()) state.color = ci.value;
+      if (qci.value.toLowerCase() !== defaults.fg.toLowerCase()) state.qcolor = qci.value;
+      if (bgi.value.toLowerCase() !== defaults.bg.toLowerCase()) state.bg = bgi.value;
+      if (!condRow.hidden) {
+        const mmdd = inputToMMDD(di.value);
+        const alt = ai2.value.trim();
+        if (/^\d{2}-\d{2}$/.test(mmdd) && alt) {
+          state.date = mmdd;
+          state.answer2 = alt;
+        }
+      }
+      return state;
+    };
+    const syncUrl = () => {
+      const parts = buildUrlParts(editorState(true));
+      history.replaceState(null, "", "/" + (parts.length ? "?" + parts.join("&") : ""));
+    };
+    for (const el of [i, ai, di, ai2]) {
+      el.addEventListener("input", syncUrl);
+    }
 
     const swatchBtns = {
       qci: document.getElementById("qci-btn"),
@@ -990,6 +1043,7 @@
       swatchBtns.ci.style.background = ci.value;
       swatchBtns.bgi.style.background = bgi.value;
       setFavicon({ emoji: emi.value, accent: ci.value, bg: bgi.value });
+      syncUrl();
     };
     for (const [key, btn] of Object.entries(swatchBtns)) {
       const input = { qci, ci, bgi }[key];
@@ -1130,21 +1184,7 @@
       ev.preventDefault();
       const day = i.value.trim();
       if (!day) { i.focus(); return; }
-      const ans = ai.value.trim();
-      const emo = emi.value.trim();
-      const mmdd = !condRow.hidden ? inputToMMDD(di.value) : "";
-      const alt = !condRow.hidden ? ai2.value.trim() : "";
-      const condActive = /^\d{2}-\d{2}$/.test(mmdd) && alt;
-      const parts = [];
-      if (ans && ans.toUpperCase() !== "YES") parts.push("answer=" + encodeURIComponent(ans));
-      if (emo) parts.push("emoji=" + encodeURIComponent(emo));
-      if (ci.value.toLowerCase() !== defaults.accent.toLowerCase()) parts.push("color=" + encodeURIComponent(ci.value));
-      if (qci.value.toLowerCase() !== defaults.fg.toLowerCase()) parts.push("qcolor=" + encodeURIComponent(qci.value));
-      if (bgi.value.toLowerCase() !== defaults.bg.toLowerCase()) parts.push("bg=" + encodeURIComponent(bgi.value));
-      if (condActive) {
-        parts.push("date=" + encodeURIComponent(mmdd));
-        parts.push("answer2=" + encodeURIComponent(alt));
-      }
+      const parts = buildUrlParts(editorState(false));
       const qs = parts.length ? "?" + parts.join("&") : "";
       location.href = "/" + encodeURIComponent(day) + qs;
     });

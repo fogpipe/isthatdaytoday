@@ -8,6 +8,7 @@ import {
   resolveAnswer,
   todayMMDD,
 } from "../data/answer.ts";
+import { buildUrlParts, stateFromParams, URL_KEYS } from "../data/url.ts";
 
 const root = new URL("..", import.meta.url).pathname;
 
@@ -41,19 +42,34 @@ const answerBlock = [
   "    // </answer>",
 ].join("\n");
 
+const urlBlock = [
+  "// <url>",
+  `    const URL_KEYS = ${JSON.stringify(URL_KEYS)};`,
+  `    const buildUrlParts = ${buildUrlParts.toString()};`,
+  `    const stateFromParams = ${stateFromParams.toString()};`,
+  "    // </url>",
+].join("\n");
+
 const indexPath = `${root}/public/index.html`;
 const html = await Deno.readTextFile(indexPath);
 const presetRe = /\/\/ <presets>[\s\S]*?\/\/ <\/presets>/;
 const answerRe = /\/\/ <answer>[\s\S]*?\/\/ <\/answer>/;
+const urlRe = /\/\/ <url>[\s\S]*?\/\/ <\/url>/;
 if (!presetRe.test(html)) {
   throw new Error("preset markers not found in public/index.html");
 }
 if (!answerRe.test(html)) {
   throw new Error("answer markers not found in public/index.html");
 }
-const updated = html.replace(presetRe, presetBlock).replace(answerRe, answerBlock);
+if (!urlRe.test(html)) {
+  throw new Error("url markers not found in public/index.html");
+}
+const updated = html.replace(presetRe, presetBlock).replace(answerRe, answerBlock).replace(
+  urlRe,
+  urlBlock,
+);
 await Deno.writeTextFile(indexPath, updated);
 
 console.log(
-  `built ${sitemapEntries.length} sitemap urls, spliced ${presets.length} presets + resolver into index.html`,
+  `built ${sitemapEntries.length} sitemap urls, spliced ${presets.length} presets + resolver + url helpers into index.html`,
 );
