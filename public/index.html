@@ -907,7 +907,7 @@
       e.textContent = emoji;
       e.hidden = false;
     }
-    document.title = `${emoji ? emoji + " " : ""}Is it ${name} day today? ${resolvedAnswer}`;
+    document.title = `Is it ${name} day today? ${resolvedAnswer}`;
     if (color) root.style.setProperty("--accent", color);
     if (qcolor) root.style.setProperty("--fg", qcolor);
     if (bg) root.style.setProperty("--bg", bg);

@@ -130,7 +130,8 @@ export const onRequest: PagesFunction = async (ctx) => {
   const answer = resolveAnswer(cond, todayMMDD(new Date(), true));
   const emoji = params.get("emoji") ?? preset?.emoji ?? "";
 
-  const titleText = `${emoji ? emoji + " " : ""}Is it ${day} day today? ${answer}`;
+  const tabTitle = `Is it ${day} day today? ${answer}`;
+  const socialTitle = `${emoji ? emoji + " " : ""}${tabTitle}`;
   const question = `Is it ${day} day today?`;
   const desc = `Is it ${day} day today? ${answer}. Today's verdict on whether it's ${day} day.`;
   const image = ogImageUrl(url.origin, day, params);
@@ -146,7 +147,7 @@ export const onRequest: PagesFunction = async (ctx) => {
   return new HTMLRewriter()
     .on("title", {
       element(el) {
-        el.setInnerContent(titleText);
+        el.setInnerContent(tabTitle);
       },
     })
     .on('link[rel="canonical"]', {
@@ -155,11 +156,11 @@ export const onRequest: PagesFunction = async (ctx) => {
       },
     })
     .on('meta[name="description"]', setContent(desc))
-    .on('meta[property="og:title"]', setContent(titleText))
+    .on('meta[property="og:title"]', setContent(socialTitle))
     .on('meta[property="og:description"]', setContent(desc))
     .on('meta[property="og:url"]', setContent(url.toString()))
     .on('meta[property="og:image"]', setContent(image))
-    .on('meta[name="twitter:title"]', setContent(titleText))
+    .on('meta[name="twitter:title"]', setContent(socialTitle))
     .on('meta[name="twitter:description"]', setContent(desc))
     .on('meta[name="twitter:image"]', setContent(image))
     .on("head", {
