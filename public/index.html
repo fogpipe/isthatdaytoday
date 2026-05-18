@@ -605,6 +605,48 @@
     font-size: 0.85rem;
   }
 
+  /* ---------- ACTIVE PRESET BADGE (root, on conditional preset dates) ---------- */
+  .active-preset {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 1.5rem auto 0;
+    padding: 0.7rem 1.15rem;
+    width: max-content;
+    max-width: calc(100% - 2rem);
+    font-family: var(--display);
+    font-style: italic;
+    font-variation-settings: "opsz" 144, "SOFT" 50, "WONK" 0;
+    font-size: clamp(1rem, 2.4vw, 1.2rem);
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    border-radius: 999px;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .active-preset:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, currentColor 55%, transparent);
+  }
+  .active-preset-emoji {
+    font-family: system-ui, sans-serif;
+    font-style: normal;
+    font-size: 1.25em;
+    line-height: 1;
+  }
+  .active-preset-day {
+    font-variation-settings: "opsz" 144, "SOFT" 20, "WONK" 1;
+    font-weight: 800;
+  }
+  .active-preset-arrow {
+    font-family: var(--mono);
+    font-style: normal;
+    opacity: 0.6;
+    margin-left: 0.15rem;
+    font-size: 0.85em;
+  }
+
   /* ---------- FOOTER ---------- */
   .site-footer {
     display: flex;
@@ -653,6 +695,9 @@
        data-ad-format="auto"
        data-full-width-responsive="true"></ins>
 </div>
+
+<!-- Active conditional preset badge (rendered for / when today matches a preset date) -->
+<a class="active-preset" id="active-preset" hidden></a>
 
 <!-- Composer view (rendered for /) -->
 <main class="composer" id="composer" hidden>

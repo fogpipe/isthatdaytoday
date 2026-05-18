@@ -52,6 +52,72 @@ const jsonLdScript = (day: string, answer: string) => {
 
 const RESERVED = new Set(["/privacy", "/privacy.html"]);
 
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+type ActivePreset = typeof rawPresets[number] & { date: string; answer2: string };
+
+const findActivePreset = (mmdd: string): ActivePreset | undefined =>
+  rawPresets.find((p): p is ActivePreset => p.date === mmdd);
+
+const activePresetUrl = (p: ActivePreset) => {
+  const qs = new URLSearchParams();
+  qs.set("answer", p.answer);
+  qs.set("answer2", p.answer2);
+  qs.set("date", p.date);
+  if (p.emoji) qs.set("emoji", p.emoji);
+  if (p.color) qs.set("color", p.color);
+  if (p.qcolor) qs.set("qcolor", p.qcolor);
+  if (p.bg) qs.set("bg", p.bg);
+  return `/${daySlug(p.day)}?${qs.toString()}`;
+};
+
+const activePresetStyle = (p: ActivePreset) => {
+  const parts: string[] = [];
+  if (p.bg) parts.push(`background:${p.bg}`);
+  if (p.qcolor) parts.push(`color:${p.qcolor}`);
+  return parts.join(";");
+};
+
+const activePresetInner = (p: ActivePreset) => {
+  const emoji = p.emoji ? `<span class="active-preset-emoji">${escapeHtml(p.emoji)}</span>` : "";
+  const dayStyle = p.color ? ` style="color:${p.color}"` : "";
+  const dayHtml = `<span class="active-preset-day"${dayStyle}>${escapeHtml(p.day)}</span>`;
+  return `${emoji}<span class="active-preset-copy">It's ${dayHtml} day today</span><span class="active-preset-arrow">→</span>`;
+};
+
+const withCacheControl = (response: Response, value: string) => {
+  const headers = new Headers(response.headers);
+  headers.set("cache-control", value);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+};
+
+const handleRoot = (response: Response) => {
+  const mmdd = todayMMDD(new Date(), true);
+  const active = findActivePreset(mmdd);
+  if (!active) return withCacheControl(response, "public, max-age=3600");
+
+  const href = activePresetUrl(active);
+  const styleAttr = activePresetStyle(active);
+  const innerHTML = activePresetInner(active);
+
+  const transformed = new HTMLRewriter()
+    .on("a#active-preset", {
+      element(el) {
+        el.removeAttribute("hidden");
+        el.setAttribute("href", href);
+        if (styleAttr) el.setAttribute("style", styleAttr);
+        el.setInnerContent(innerHTML, { html: true });
+      },
+    })
+    .transform(response);
+  return withCacheControl(transformed, "public, max-age=3600");
+};
+
 export const onRequest: PagesFunction = async (ctx) => {
   const response = await ctx.next();
   const contentType = response.headers.get("content-type") || "";
@@ -60,7 +126,7 @@ export const onRequest: PagesFunction = async (ctx) => {
   const url = new URL(ctx.request.url);
   if (RESERVED.has(url.pathname)) return response;
   const day = parseDay(url.pathname);
-  if (!day) return response;
+  if (!day) return handleRoot(response);
 
   const params = url.searchParams;
   const preset = rawPresets.find((p) => p.day === day);
