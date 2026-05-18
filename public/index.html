@@ -1109,12 +1109,16 @@
       ans.style.color = p.color;
       ans.textContent = p.answer;
       btn.appendChild(ans);
-      btn.addEventListener("click", () => apply(p));
+      btn.addEventListener("click", () => {
+        apply(p);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
       presetsEl.appendChild(btn);
     }
     document.getElementById("random-btn").addEventListener("click", () => {
       const pool = presets.filter((p) => p.day !== i.value);
       apply(pool[Math.floor(Math.random() * pool.length)]);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
     const modal = document.getElementById("emoji-modal");
