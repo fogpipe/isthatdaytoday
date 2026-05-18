@@ -5,14 +5,7 @@ import { readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
 
 const daySlug = (day: string) => day.split(/\s+/).map(encodeURIComponent).join("-");
 
-const PRESETS = rawPresets.map((p) => ({
-  day: p.day,
-  slug: daySlug(p.day),
-  emoji: p.emoji ?? "",
-  answer: p.answer,
-}));
-
-const PRESET_DAYS = new Set(PRESETS.map((p) => p.day));
+const PRESET_DAYS = new Set(rawPresets.map((p) => p.day));
 
 const parseDay = (pathname: string) => {
   const seg = decodeURIComponent(pathname).replace(/^\/+|\/+$/g, "");
@@ -35,30 +28,10 @@ const setContent = (value: string) => ({
   },
 });
 
-const escapeHtml = (s: string) =>
-  s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-
 const editHref = (day: string, params: URLSearchParams) => {
   const qs = new URLSearchParams(params);
   qs.set("day", day);
   return `/?${qs.toString()}`;
-};
-
-const otherDaysNav = (currentDay: string) => {
-  const items = PRESETS
-    .filter((p) => p.day !== currentDay)
-    .slice(0, 8)
-    .map((p) => {
-      const label = `${p.emoji ? p.emoji + " " : ""}${escapeHtml(p.day)}`;
-      return `<li><a href="/${p.slug}">${label}</a></li>`;
-    })
-    .join("");
-  return `<nav class="other-days" aria-label="Other days"><span class="other-days-label">Other days</span><ul>${items}</ul></nav>`;
 };
 
 const jsonLdScript = (day: string, answer: string) => {
@@ -157,11 +130,6 @@ export const onRequest: PagesFunction = async (ctx) => {
       element(el) {
         el.removeAttribute("hidden");
         el.setInnerContent(answer);
-      },
-    })
-    .on("footer.site-footer", {
-      element(el) {
-        el.before(otherDaysNav(day), { html: true });
       },
     })
     .transform(response);
