@@ -1,7 +1,10 @@
 default:
     @just --list
 
-start:
+build:
+    ./scripts/build.ts
+
+start: build
     caddy run --config Caddyfile
 
 status:
@@ -10,7 +13,7 @@ status:
 deps:
     deno install --node-modules-dir=auto
 
-release: deps
+release: deps build
     wrangler pages deploy public --project-name=isthatdaytoday
 
 tf *args:

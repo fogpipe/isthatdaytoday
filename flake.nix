@@ -19,6 +19,7 @@
             just
             opentofu
             caddy
+            deno
           ];
         };
       }

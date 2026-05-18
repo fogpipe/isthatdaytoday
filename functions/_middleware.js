@@ -1,19 +1,13 @@
-const PRESETS = [
-  { slug: "workout", day: "workout", emoji: "", answer: "YES" },
-  { slug: "pizza", day: "pizza", emoji: "🍕", answer: "YES" },
-  { slug: "pajama", day: "pajama", emoji: "😴", answer: "ALWAYS" },
-  { slug: "coffee", day: "coffee", emoji: "☕", answer: "YES" },
-  { slug: "slay", day: "slay", emoji: "", answer: "YES" },
-  { slug: "your-birth", day: "your birth", emoji: "🎂", answer: "YES" },
-  { slug: "doomscroll", day: "doomscroll", emoji: "📱", answer: "ALAS" },
-  { slug: "good", day: "good", emoji: "😊", answer: "YES" },
-  { slug: "leg", day: "leg", emoji: "🦵", answer: "YES" },
-  { slug: "mercury-retrograde", day: "mercury retrograde", emoji: "", answer: "NO" },
-  { slug: "taco", day: "taco", emoji: "🌮", answer: "SÍ" },
-  { slug: "valentines", day: "valentines", emoji: "💝", answer: "YES" },
-  { slug: "kanelbullens", day: "kanelbullens", emoji: "", answer: "JA" },
-  { slug: "syttende-mai", day: "syttende mai", emoji: "🇳🇴", answer: "JA" },
-];
+import rawPresets from "../data/presets.ts";
+
+const daySlug = (day) => day.split(/\s+/).map(encodeURIComponent).join("-");
+
+const PRESETS = rawPresets.map((p) => ({
+  day: p.day,
+  slug: daySlug(p.day),
+  emoji: p.emoji ?? "",
+  answer: p.answer,
+}));
 
 const PRESET_DAYS = new Set(PRESETS.map((p) => p.day));
 
@@ -21,8 +15,6 @@ const parseDay = (pathname) => {
   const seg = decodeURIComponent(pathname).replace(/^\/+|\/+$/g, "");
   return seg.replace(/[-_+]+/g, " ").trim();
 };
-
-const daySlug = (day) => day.split(/\s+/).map(encodeURIComponent).join("-");
 
 const ogImageUrl = (origin, day, params) => {
   const og = new URLSearchParams();
