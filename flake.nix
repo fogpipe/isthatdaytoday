@@ -18,7 +18,6 @@
             wrangler
             just
             opentofu
-            caddy
             deno
           ];
         };

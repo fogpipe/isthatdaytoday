@@ -4,8 +4,8 @@ default:
 build:
     ./scripts/build.ts
 
-start: build
-    caddy run --config Caddyfile
+start: deps build
+    wrangler pages dev public --compatibility-date=2026-05-14 --port=$PORT
 
 status:
     ./scripts/status.sh
