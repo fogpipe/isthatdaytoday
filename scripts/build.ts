@@ -1,7 +1,13 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
 
 import presets from "../data/presets.ts";
-import { isConditional, readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
+import {
+  isConditional,
+  mergeConditional,
+  readConditional,
+  resolveAnswer,
+  todayMMDD,
+} from "../data/answer.ts";
 
 const root = new URL("..", import.meta.url).pathname;
 
@@ -28,6 +34,7 @@ const presetBlock = `// <presets>\n    const rawPresets = [\n${rows}\n    ];\n  
 const answerBlock = [
   "// <answer>",
   `    const todayMMDD = ${todayMMDD.toString()};`,
+  `    const mergeConditional = ${mergeConditional.toString()};`,
   `    const readConditional = ${readConditional.toString()};`,
   `    const isConditional = ${isConditional.toString()};`,
   `    const resolveAnswer = ${resolveAnswer.toString()};`,

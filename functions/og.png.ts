@@ -2,7 +2,14 @@
 
 import { ImageResponse, loadGoogleFont } from "workers-og";
 
-import { isConditional, readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
+import rawPresets from "../data/presets.ts";
+import {
+  isConditional,
+  mergeConditional,
+  readConditional,
+  resolveAnswer,
+  todayMMDD,
+} from "../data/answer.ts";
 
 const fontsPromise = Promise.all([
   loadGoogleFont({ family: "Fraunces", weight: 500 }),
@@ -23,13 +30,14 @@ export const onRequest: PagesFunction = async (ctx) => {
   const url = new URL(ctx.request.url);
   const p = url.searchParams;
   const day = (p.get("day") || "").trim();
-  const cond = readConditional(p);
+  const preset = day ? rawPresets.find((x) => x.day === day) : undefined;
+  const cond = preset ? mergeConditional(p, preset) : readConditional(p);
   const answer = resolveAnswer(cond, todayMMDD(new Date(), true));
   const conditional = isConditional(cond);
-  const emoji = p.get("emoji") || "";
-  const accent = p.get("color") || "#16a34a";
-  const fg = p.get("qcolor") || "#1a1a1a";
-  const bg = p.get("bg") || "#fafaf7";
+  const emoji = p.get("emoji") || preset?.emoji || "";
+  const accent = p.get("color") || preset?.color || "#16a34a";
+  const fg = p.get("qcolor") || preset?.qcolor || "#1a1a1a";
+  const bg = p.get("bg") || preset?.bg || "#fafaf7";
 
   const answerSize = fitAnswer(answer);
   const questionNode = day
