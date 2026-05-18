@@ -962,6 +962,27 @@
   } else {
     document.body.classList.add("view-edit");
     composer.hidden = false;
+    const supportsFieldSizing = window.CSS?.supports?.("field-sizing", "content") ?? false;
+    const sizeInputs = supportsFieldSizing ? () => {} : (() => {
+      const m = document.createElement("span");
+      m.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden;white-space:pre;padding:0;border:0;";
+      document.body.appendChild(m);
+      const one = (el) => {
+        const cs = getComputedStyle(el);
+        m.style.fontFamily = cs.fontFamily;
+        m.style.fontSize = cs.fontSize;
+        m.style.fontWeight = cs.fontWeight;
+        m.style.fontStyle = cs.fontStyle;
+        m.style.fontVariationSettings = cs.fontVariationSettings;
+        m.style.letterSpacing = cs.letterSpacing;
+        m.style.textTransform = cs.textTransform;
+        m.textContent = el.value || el.placeholder || "";
+        const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+        const borderX = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+        el.style.width = Math.ceil(m.getBoundingClientRect().width + padX + borderX) + "px";
+      };
+      return (...els) => els.forEach(one);
+    })();
     const emiBtn = document.getElementById("emi-btn");
     const setEmoji = (val) => {
       emi.value = val;
@@ -990,6 +1011,7 @@
         di.value = "";
         ai2.value = "NO";
       }
+      sizeInputs(ai2);
       syncUrl();
     };
     condToggle.addEventListener("click", () => {
@@ -1026,9 +1048,10 @@
       const parts = buildUrlParts(editorState(true));
       history.replaceState(null, "", "/" + (parts.length ? "?" + parts.join("&") : ""));
     };
-    for (const el of [i, ai, di, ai2]) {
-      el.addEventListener("input", syncUrl);
+    for (const el of [i, ai, ai2]) {
+      el.addEventListener("input", () => { sizeInputs(el); syncUrl(); });
     }
+    di.addEventListener("input", syncUrl);
 
     const swatchBtns = {
       qci: document.getElementById("qci-btn"),
@@ -1070,6 +1093,7 @@
       bgi.value = p.bg;
       setConditional(p.date || "", p.answer2 || "");
       liveApply();
+      sizeInputs(i, ai);
     };
     const initial = params.has("day") ? {
       day: params.get("day") ?? "",
@@ -1082,6 +1106,7 @@
       answer2: (params.get("answer2") ?? "").toUpperCase(),
     } : presets[0];
     apply(initial);
+    document.fonts?.ready?.then(() => sizeInputs(i, ai, ai2));
 
     const presetsEl = document.getElementById("presets");
     for (const p of presets) {
