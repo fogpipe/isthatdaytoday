@@ -709,18 +709,18 @@
 
     <h1 class="question">
       Is it
-      <input id="i" class="day-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="?" aria-label="Day name">
+      <input id="i" class="day-input" type="text" size="10" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="?" aria-label="Day name">
       day today?
     </h1>
 
-    <input id="ai" class="answer-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" value="YES" aria-label="Answer">
+    <input id="ai" class="answer-input" type="text" size="4" autocomplete="off" autocapitalize="characters" spellcheck="false" value="YES" aria-label="Answer">
 
     <div class="cond-row" id="cond-row" hidden>
       <span class="cond-label">on</span>
       <input id="di" class="date-input" type="date" aria-label="Date">
       <span class="cond-sep">·</span>
       <span class="cond-label">otherwise</span>
-      <input id="ai2" class="answer-input-small" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" value="NO" aria-label="Answer when date doesn't match">
+      <input id="ai2" class="answer-input-small" type="text" size="3" autocomplete="off" autocapitalize="characters" spellcheck="false" value="NO" aria-label="Answer when date doesn't match">
       <button type="button" class="cond-remove" id="cond-remove" aria-label="Remove date condition">×</button>
     </div>
     <button type="button" class="cond-toggle" id="cond-toggle">+ date condition</button>
@@ -962,27 +962,6 @@
   } else {
     document.body.classList.add("view-edit");
     composer.hidden = false;
-    const supportsFieldSizing = window.CSS?.supports?.("field-sizing", "content") ?? false;
-    const sizeInputs = supportsFieldSizing ? () => {} : (() => {
-      const m = document.createElement("span");
-      m.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden;white-space:pre;padding:0;border:0;";
-      document.body.appendChild(m);
-      const one = (el) => {
-        const cs = getComputedStyle(el);
-        m.style.fontFamily = cs.fontFamily;
-        m.style.fontSize = cs.fontSize;
-        m.style.fontWeight = cs.fontWeight;
-        m.style.fontStyle = cs.fontStyle;
-        m.style.fontVariationSettings = cs.fontVariationSettings;
-        m.style.letterSpacing = cs.letterSpacing;
-        m.style.textTransform = cs.textTransform;
-        m.textContent = el.value || el.placeholder || "";
-        const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
-        const borderX = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
-        el.style.width = Math.ceil(m.getBoundingClientRect().width + padX + borderX) + "px";
-      };
-      return (...els) => els.forEach(one);
-    })();
     const emiBtn = document.getElementById("emi-btn");
     const setEmoji = (val) => {
       emi.value = val;
@@ -1011,7 +990,6 @@
         di.value = "";
         ai2.value = "NO";
       }
-      sizeInputs(ai2);
       syncUrl();
     };
     condToggle.addEventListener("click", () => {
@@ -1048,10 +1026,9 @@
       const parts = buildUrlParts(editorState(true));
       history.replaceState(null, "", "/" + (parts.length ? "?" + parts.join("&") : ""));
     };
-    for (const el of [i, ai, ai2]) {
-      el.addEventListener("input", () => { sizeInputs(el); syncUrl(); });
+    for (const el of [i, ai, di, ai2]) {
+      el.addEventListener("input", syncUrl);
     }
-    di.addEventListener("input", syncUrl);
 
     const swatchBtns = {
       qci: document.getElementById("qci-btn"),
@@ -1093,7 +1070,6 @@
       bgi.value = p.bg;
       setConditional(p.date || "", p.answer2 || "");
       liveApply();
-      sizeInputs(i, ai);
     };
     const initial = params.has("day") ? {
       day: params.get("day") ?? "",
@@ -1106,7 +1082,6 @@
       answer2: (params.get("answer2") ?? "").toUpperCase(),
     } : presets[0];
     apply(initial);
-    document.fonts?.ready?.then(() => sizeInputs(i, ai, ai2));
 
     const presetsEl = document.getElementById("presets");
     for (const p of presets) {
