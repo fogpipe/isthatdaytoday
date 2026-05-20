@@ -28,19 +28,16 @@
 <script defer src="https://cloud.umami.is/script.js" data-website-id="3d84798e-202b-4043-8522-130de01b7bb3" data-domains="isthatday.today,www.isthatday.today"></script>
 <style>
   :root {
-    color-scheme: light dark;
-    --bg: #fafaf7;
-    --fg: #1a1a1a;
-    --accent: #16a34a;
+    color-scheme: dark;
+    --bg: #0f1110;
+    --fg: #f5f5f0;
+    --accent: #4ade80;
     --display: "Fraunces", Georgia, "Times New Roman", serif;
     --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     --ink-soft: color-mix(in srgb, var(--fg) 58%, transparent);
     --ink-faint: color-mix(in srgb, var(--fg) 22%, transparent);
     --rule: color-mix(in srgb, var(--fg) 16%, transparent);
     --paper: color-mix(in srgb, var(--fg) 5%, var(--bg));
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #0f1110; --fg: #f5f5f0; --accent: #4ade80; }
   }
   * { box-sizing: border-box; }
   html, body {
@@ -274,7 +271,6 @@
     border-bottom: 2px solid color-mix(in srgb, var(--fg) 25%, transparent);
     padding: 0.15rem 0.25rem;
     outline: none;
-    color-scheme: light dark;
   }
   .date-input:focus { border-bottom-color: var(--accent); }
   .answer-input-small {
@@ -867,21 +863,10 @@
   const bgi = document.getElementById("bgi");
 
   const root = document.documentElement;
-  const cs = getComputedStyle(root);
-  const toHex = (val) => {
-    const s = val.trim();
-    if (s.startsWith("#")) return s.length === 4
-      ? "#" + s.slice(1).split("").map((c) => c + c).join("")
-      : s.toLowerCase();
-    const m = s.match(/rgba?\(([^)]+)\)/i);
-    if (!m) return s.toLowerCase();
-    const [r, g, b] = m[1].split(",").map((n) => parseInt(n.trim(), 10));
-    return "#" + [r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("");
-  };
   const defaults = {
-    accent: toHex(cs.getPropertyValue("--accent")),
-    fg: toHex(cs.getPropertyValue("--fg")),
-    bg: toHex(cs.getPropertyValue("--bg")),
+    accent: "#4ade80",
+    fg: "#f5f5f0",
+    bg: "#0f1110",
   };
 
   const faviconLink = document.querySelector("link[rel='icon']");

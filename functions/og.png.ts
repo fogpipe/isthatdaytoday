@@ -27,9 +27,9 @@ export const onRequest: PagesFunction = async (ctx) => {
   const answer = resolveAnswer(cond, todayMMDD(new Date(), true));
   const conditional = isConditional(cond);
   const emoji = p.get("emoji") || "";
-  const accent = p.get("color") || "#16a34a";
-  const fg = p.get("qcolor") || "#1a1a1a";
-  const bg = p.get("bg") || "#fafaf7";
+  const accent = p.get("color") || "#4ade80";
+  const fg = p.get("qcolor") || "#f5f5f0";
+  const bg = p.get("bg") || "#0f1110";
 
   const answerSize = fitAnswer(answer);
   const questionNode = day
