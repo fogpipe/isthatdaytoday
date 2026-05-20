@@ -290,6 +290,14 @@
     outline: none;
   }
   .date-input:focus { border-bottom-color: var(--accent); }
+  .date-input::-webkit-calendar-picker-indicator {
+    background: var(--fg);
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 1v2H2.5A1.5 1.5 0 0 0 1 4.5v9A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 13.5 3H12V1h-1v2H5V1H4zM2 6h12v7.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V6z'/></svg>") center / contain no-repeat;
+            mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 1v2H2.5A1.5 1.5 0 0 0 1 4.5v9A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 13.5 3H12V1h-1v2H5V1H4zM2 6h12v7.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V6z'/></svg>") center / contain no-repeat;
+    opacity: 0.7;
+    cursor: pointer;
+  }
+  .date-input::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   .answer-input-small {
     font-family: var(--display);
     font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
