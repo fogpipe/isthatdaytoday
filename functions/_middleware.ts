@@ -1,7 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
 import rawPresets from "../data/presets.ts";
-import { mergeConditional, readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
+import { readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
 import { buildUrlParts, stateFromParams } from "../data/url.ts";
 
 const daySlug = (day: string) => day.split(/\s+/).map(encodeURIComponent).join("-");
@@ -125,10 +125,9 @@ export const onRequest: PagesFunction = async (ctx) => {
   if (!day) return handleRoot(response);
 
   const params = url.searchParams;
-  const preset = rawPresets.find((p) => p.day === day);
-  const cond = preset ? mergeConditional(params, preset) : readConditional(params);
+  const cond = readConditional(params);
   const answer = resolveAnswer(cond, todayMMDD(new Date(), true));
-  const emoji = params.get("emoji") ?? preset?.emoji ?? "";
+  const emoji = params.get("emoji") ?? "";
 
   const tabTitle = `Is it ${day} day today? ${answer}`;
   const socialTitle = `${emoji ? emoji + " " : ""}${tabTitle}`;

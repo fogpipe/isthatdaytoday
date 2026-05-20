@@ -847,10 +847,9 @@
   const params = new URLSearchParams(location.search);
   const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
   const name = fromPath.replace(/[-_+]+/g, " ").trim();
-  const activePreset = name ? rawPresets.find((p) => p.day === name) : undefined;
-  const cond = activePreset ? mergeConditional(params, activePreset) : readConditional(params);
+  const cond = readConditional(params);
   const resolvedAnswer = resolveAnswer(cond, todayMMDD(new Date(), false));
-  const emoji = params.get("emoji") ?? activePreset?.emoji ?? "";
+  const emoji = params.get("emoji") ?? "";
   const color = params.get("color");
   const qcolor = params.get("qcolor");
   const bg = params.get("bg");
