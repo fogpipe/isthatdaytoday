@@ -179,7 +179,7 @@ export const onRequest: PagesFunction = async (ctx) => {
         el.setInnerContent(emoji);
       },
     })
-    .on("a#ql", {
+    .on("a#ql, a#qle", {
       element(el) {
         el.removeAttribute("hidden");
         el.setAttribute("href", editUrl);

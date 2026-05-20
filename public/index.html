@@ -97,8 +97,25 @@
     letter-spacing: -0.04em;
     line-height: 0.92;
   }
-  .share {
+  .actions {
     margin-top: 2.5rem;
+    display: none;
+    align-items: center;
+    gap: 1rem;
+  }
+  body.view-answer .actions { display: flex; }
+  .edit-link {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid var(--ink-faint);
+    padding-bottom: 1px;
+  }
+  .edit-link:hover { color: var(--fg); border-bottom-color: var(--fg); }
+  .share {
     font-family: var(--mono);
     font-size: 0.78rem;
     font-weight: 700;
@@ -682,7 +699,10 @@
 <div class="emoji" id="e" hidden></div>
 <a class="q-link" id="ql" href="/" hidden><h1 class="question" id="q">Is it day today?</h1></a>
 <p class="answer" id="a" hidden>YES</p>
-<button class="share" id="s" type="button" hidden>Share</button>
+<div class="actions">
+  <button class="share" id="s" type="button" hidden>Share</button>
+  <a class="edit-link" id="qle" href="/" hidden>edit</a>
+</div>
 <div class="ad" id="ad" hidden>
   <ins class="adsbygoogle"
        style="display:block"
@@ -881,10 +901,14 @@
   if (name) {
     document.body.classList.add("view-answer");
     const ql = document.getElementById("ql");
+    const qle = document.getElementById("qle");
     ql.hidden = false;
+    qle.hidden = false;
     const editParams = new URLSearchParams(params);
     editParams.set("day", name);
-    ql.href = "/?" + editParams.toString();
+    const editHref = "/?" + editParams.toString();
+    ql.href = editHref;
+    qle.href = editHref;
     a.hidden = false;
     q.textContent = `Is it ${name} day today?`;
     a.textContent = resolvedAnswer;
