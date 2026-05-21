@@ -4,15 +4,19 @@ import { ImageResponse, loadGoogleFont } from "workers-og";
 
 import { isConditional, readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
 
-const fontsPromise = Promise.all([
-  loadGoogleFont({ family: "Fraunces", weight: 500 }),
-  loadGoogleFont({ family: "Fraunces", weight: 900 }),
-  loadGoogleFont({ family: "JetBrains Mono", weight: 500 }),
-]).then(([medium, black, mono]) => [
-  { name: "Fraunces", data: medium, weight: 500, style: "normal" as const },
-  { name: "Fraunces", data: black, weight: 900, style: "normal" as const },
-  { name: "JetBrains Mono", data: mono, weight: 500, style: "normal" as const },
-]);
+const fetchFonts = () =>
+  Promise.all([
+    loadGoogleFont({ family: "Fraunces", weight: 500 }),
+    loadGoogleFont({ family: "Fraunces", weight: 900 }),
+    loadGoogleFont({ family: "JetBrains Mono", weight: 500 }),
+  ]).then(([medium, black, mono]) => [
+    { name: "Fraunces", data: medium, weight: 500, style: "normal" as const },
+    { name: "Fraunces", data: black, weight: 900, style: "normal" as const },
+    { name: "JetBrains Mono", data: mono, weight: 500, style: "normal" as const },
+  ]);
+
+let fontsPromise: ReturnType<typeof fetchFonts> | undefined;
+const loadFonts = () => fontsPromise ??= fetchFonts();
 
 const fitAnswer = (text: string) => {
   const sized = Math.floor(1060 / Math.max(text.length, 3) / 0.78);
@@ -58,7 +62,7 @@ export const onRequest: PagesFunction = async (ctx) => {
   const response = new ImageResponse(html, {
     width: 1200,
     height: 630,
-    fonts: await fontsPromise,
+    fonts: await loadFonts(),
     emoji: "twemoji",
   });
   response.headers.set(
