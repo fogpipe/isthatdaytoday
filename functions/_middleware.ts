@@ -193,6 +193,7 @@ export const onRequest: PagesFunction = async (ctx) => {
     .on("p#a", {
       element(el) {
         el.removeAttribute("hidden");
+        el.setAttribute("style", `--len: ${answer.length}`);
         el.setInnerContent(answer);
       },
     })

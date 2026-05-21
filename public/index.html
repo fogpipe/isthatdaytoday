@@ -74,9 +74,10 @@
     font-weight: 500;
     font-style: italic;
     margin: 0 0 1.25rem;
-    max-width: 22ch;
+    max-width: min(22ch, 95vw);
     line-height: 1.15;
     letter-spacing: -0.005em;
+    overflow-wrap: anywhere;
   }
   .q-link {
     color: inherit;
@@ -90,12 +91,14 @@
   .answer {
     font-family: var(--display);
     font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
-    font-size: clamp(5rem, 22vw, 14rem);
+    font-size: clamp(3rem, min(22vw, calc(80vw / var(--len, 4))), 14rem);
     font-weight: 900;
     color: var(--accent);
     margin: 0;
+    max-width: 95vw;
     letter-spacing: -0.04em;
     line-height: 0.92;
+    overflow-wrap: anywhere;
   }
   .actions {
     margin-top: 2.5rem;
@@ -156,6 +159,7 @@
     padding: 1.25rem clamp(1rem, 4vw, 2.5rem) 2rem;
     max-width: 72rem;
     width: 100%;
+    min-width: 0;
     margin: 0 auto;
   }
 
@@ -167,6 +171,8 @@
     text-align: center;
     gap: clamp(1rem, 3vw, 1.75rem);
     padding: clamp(1rem, 5vw, 3rem) 0.5rem;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .emoji-slot {
@@ -207,57 +213,54 @@
   .composer .question {
     font-family: var(--display);
     font-variation-settings: "opsz" 144, "SOFT" 70, "WONK" 0;
-    font-size: clamp(1.9rem, 6.5vw, 4.75rem);
+    font-size: clamp(1.5rem, min(6.5vw, calc(162vw / var(--len, 20))), 4.75rem);
     font-weight: 500;
     font-style: italic;
     line-height: 1.05;
     margin: 0;
-    max-width: 22ch;
+    max-width: 100%;
     letter-spacing: -0.01em;
     color: var(--fg);
+    overflow-wrap: anywhere;
   }
   .day-input {
-    font: inherit;
     font-style: normal;
     font-weight: 800;
     font-variation-settings: "opsz" 144, "SOFT" 20, "WONK" 1;
     color: var(--accent);
-    background: transparent;
-    border: 0;
     border-bottom: 3px solid color-mix(in srgb, var(--accent) 80%, transparent);
     padding: 0 0.15em 0.02em;
     margin: 0 0.05em;
-    text-align: center;
     outline: none;
-    min-width: 3ch;
-    field-sizing: content;
     caret-color: var(--accent);
-    border-radius: 0;
+    cursor: text;
   }
-  .day-input::placeholder { color: var(--ink-faint); font-style: italic; font-weight: 400; }
+  .day-input:empty::before {
+    content: "?";
+    color: var(--ink-faint);
+    font-style: italic;
+    font-weight: 400;
+  }
   .day-input:focus {
     border-bottom-color: var(--accent);
-    border-bottom-style: solid;
   }
 
   .answer-input {
     font-family: var(--display);
     font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
-    font-size: clamp(4.5rem, 20vw, 12rem);
+    font-size: clamp(2.5rem, min(20vw, calc(85vw / var(--len, 4))), 12rem);
     font-weight: 900;
     color: var(--accent);
-    background: transparent;
-    border: 0;
     outline: none;
     text-align: center;
     letter-spacing: -0.04em;
     line-height: 0.9;
     text-transform: uppercase;
-    min-width: 2ch;
     max-width: 100%;
-    field-sizing: content;
     padding: 0 0.05em;
     caret-color: var(--accent);
+    cursor: text;
+    overflow-wrap: anywhere;
   }
   .answer-input:focus {
     background: color-mix(in srgb, var(--accent) 6%, transparent);
@@ -733,18 +736,18 @@
 
     <h1 class="question">
       Is it
-      <input id="i" class="day-input" type="text" size="10" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="?" aria-label="Day name">
+      <span id="i" class="day-input" contenteditable="plaintext-only" role="textbox" autocapitalize="none" spellcheck="false" aria-label="Day name"></span>
       day today?
     </h1>
 
-    <input id="ai" class="answer-input" type="text" size="4" autocomplete="off" autocapitalize="characters" spellcheck="false" value="YES" aria-label="Answer">
+    <div id="ai" class="answer-input" contenteditable="plaintext-only" role="textbox" autocapitalize="characters" spellcheck="false" aria-label="Answer">YES</div>
 
     <div class="cond-row" id="cond-row" hidden>
       <span class="cond-label">on</span>
       <input id="di" class="date-input" type="date" aria-label="Date">
       <span class="cond-sep">·</span>
       <span class="cond-label">otherwise</span>
-      <input id="ai2" class="answer-input-small" type="text" size="3" autocomplete="off" autocapitalize="characters" spellcheck="false" value="NO" aria-label="Answer when date doesn't match">
+      <input id="ai2" class="answer-input-small" type="text" size="3" maxlength="50" autocomplete="off" autocapitalize="characters" spellcheck="false" value="NO" aria-label="Answer when date doesn't match">
       <button type="button" class="cond-remove" id="cond-remove" aria-label="Remove date condition">×</button>
     </div>
     <button type="button" class="cond-toggle" id="cond-toggle">+ date condition</button>
@@ -920,6 +923,7 @@
     a.hidden = false;
     q.textContent = `Is it ${name} day today?`;
     a.textContent = resolvedAnswer;
+    a.style.setProperty("--len", resolvedAnswer.length);
     if (emoji) {
       e.textContent = emoji;
       e.hidden = false;
@@ -1019,10 +1023,10 @@
     const editorState = (includeDay) => {
       const state = {};
       if (includeDay) {
-        const day = i.value.trim();
+        const day = i.textContent.trim();
         if (day) state.day = day;
       }
-      const ans = ai.value.trim();
+      const ans = ai.textContent.trim();
       if (ans && ans.toUpperCase() !== "YES") state.answer = ans;
       const emo = emi.value.trim();
       if (emo) state.emoji = emo;
@@ -1043,9 +1047,30 @@
       const parts = buildUrlParts(editorState(true));
       history.replaceState(null, "", "/" + (parts.length ? "?" + parts.join("&") : ""));
     };
+    const valOf = (el) => el.value ?? el.textContent;
+    const fit = (el) => el.style.setProperty("--len", Math.max(valOf(el).length, 1));
+    const fitQuestion = () => {
+      i.parentElement.style.setProperty("--len", Math.max(i.textContent.length + 17, 17));
+    };
+    const cap = (el, max) => {
+      if (el.textContent.length <= max) return;
+      el.textContent = el.textContent.slice(0, max);
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    };
     for (const el of [i, ai, di, ai2]) {
       el.addEventListener("input", syncUrl);
     }
+    for (const el of [ai, ai2]) {
+      el.addEventListener("input", () => fit(el));
+    }
+    i.addEventListener("input", fitQuestion);
+    i.addEventListener("input", () => cap(i, 60));
+    ai.addEventListener("input", () => cap(ai, 50));
 
     const swatchBtns = {
       qci: document.getElementById("qci-btn"),
@@ -1079,13 +1104,16 @@
       ...p,
     }));
     const apply = (p) => {
-      i.value = p.day;
-      ai.value = p.answer;
+      i.textContent = (p.day || "").slice(0, 60);
+      ai.textContent = (p.answer || "").slice(0, 50);
       setEmoji(p.emoji);
       ci.value = p.color;
       qci.value = p.qcolor;
       bgi.value = p.bg;
       setConditional(p.date || "", p.answer2 || "");
+      fitQuestion();
+      fit(ai);
+      fit(ai2);
       liveApply();
     };
     const initial = params.has("day") ? {

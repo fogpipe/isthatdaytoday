@@ -20,7 +20,7 @@ const loadFonts = () => fontsPromise ??= fetchFonts();
 
 const fitAnswer = (text: string) => {
   const sized = Math.floor(1060 / Math.max(text.length, 3) / 0.78);
-  return Math.min(280, sized);
+  return Math.min(280, Math.max(64, sized));
 };
 
 export const onRequest: PagesFunction = async (ctx) => {
@@ -53,7 +53,7 @@ export const onRequest: PagesFunction = async (ctx) => {
       : ""
   }
         ${questionNode}
-        <div style="display:flex;font-size:${answerSize}px;font-weight:900;line-height:0.92;color:${accent};letter-spacing:-0.04em;margin-top:28px;">${answer}</div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;max-width:1080px;font-size:${answerSize}px;font-weight:900;line-height:0.92;color:${accent};letter-spacing:-0.04em;margin-top:28px;">${answer}</div>
       </div>
       <div style="display:flex;justify-content:center;font-family:'JetBrains Mono';font-size:16px;font-weight:500;opacity:0.5;letter-spacing:0.22em;">ISTHATDAY.TODAY</div>
     </div>
