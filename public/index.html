@@ -1161,7 +1161,7 @@
       presetsEl.appendChild(btn);
     }
     document.getElementById("random-btn").addEventListener("click", () => {
-      const pool = presets.filter((p) => p.day !== i.value);
+      const pool = presets.filter((p) => p.day !== i.textContent);
       apply(pool[Math.floor(Math.random() * pool.length)]);
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -1231,7 +1231,7 @@
 
     f.addEventListener("submit", (ev) => {
       ev.preventDefault();
-      const day = i.value.trim();
+      const day = i.textContent.trim();
       if (!day) { i.focus(); return; }
       const parts = buildUrlParts(editorState(false));
       const qs = parts.length ? "?" + parts.join("&") : "";
