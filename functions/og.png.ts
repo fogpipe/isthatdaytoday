@@ -2,7 +2,7 @@
 
 import { ImageResponse, loadGoogleFont } from "workers-og";
 
-import { isConditional, readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
+import { isConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
 
 const fetchFonts = () =>
   Promise.all([
@@ -23,17 +23,23 @@ const fitAnswer = (text: string) => {
   return Math.min(280, Math.max(64, sized));
 };
 
+const ensureHash = (s: string) => /^[0-9a-fA-F]{3,8}$/.test(s) ? "#" + s : s;
+
 export const onRequest: PagesFunction = async (ctx) => {
   const url = new URL(ctx.request.url);
   const p = url.searchParams;
   const day = (p.get("day") || "").trim();
-  const cond = readConditional(p);
-  const answer = resolveAnswer(cond, todayMMDD(new Date(), true));
-  const conditional = isConditional(cond);
+  const state = {
+    answer: p.get("answer") ?? undefined,
+    answer2: p.get("answer2") ?? undefined,
+    date: p.get("date") ?? undefined,
+  };
+  const answer = resolveAnswer(state, todayMMDD(new Date(), true));
+  const conditional = isConditional(state);
   const emoji = p.get("emoji") || "";
-  const accent = p.get("color") || "#4ade80";
-  const fg = p.get("qcolor") || "#f5f5f0";
-  const bg = p.get("bg") || "#0f1110";
+  const accent = ensureHash(p.get("color") || "#4ade80");
+  const fg = ensureHash(p.get("qcolor") || "#f5f5f0");
+  const bg = ensureHash(p.get("bg") || "#0f1110");
 
   const answerSize = fitAnswer(answer);
   const questionNode = day

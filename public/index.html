@@ -806,38 +806,94 @@
   const day = utc ? now.getUTCDate() : now.getDate();
   return `${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 };
-    const mergeConditional = (params, fallback)=>({
-    answer: (params.get("answer") ?? fallback.answer).toUpperCase(),
-    answer2: (params.get("answer2") ?? fallback.answer2 ?? "").toUpperCase(),
-    date: params.get("date") ?? fallback.date ?? ""
-  });
-    const readConditional = (params)=>mergeConditional(params, {
-    answer: "YES"
-  });
-    const isConditional = (input)=>/^\d{2}-\d{2}$/.test(input.date) && input.answer2.length > 0;
-    const resolveAnswer = (input, mmdd)=>{
-  const valid = /^\d{2}-\d{2}$/.test(input.date) && input.answer2.length > 0;
-  if (!valid) return input.answer;
-  return mmdd === input.date ? input.answer : input.answer2;
+    const resolveAnswer = (state, mmdd)=>{
+  const answer = (state.answer ?? "YES").toUpperCase();
+  const answer2 = (state.answer2 ?? "").toUpperCase();
+  const date = state.date ?? "";
+  const valid = /^\d{2}-\d{2}$/.test(date) && answer2.length > 0;
+  if (!valid) return answer;
+  return mmdd === date ? answer : answer2;
 };
     // </answer>
 
     // <url>
-    const URL_KEYS = ["day","answer","answer2","date","emoji","color","qcolor","bg"];
     const buildUrlParts = (state)=>{
   const parts = [];
-  for (const k of URL_KEYS){
+  for (const k of [
+    "day",
+    "answer",
+    "answer2",
+    "date",
+    "emoji",
+    "color",
+    "qcolor",
+    "bg"
+  ]){
     const v = state[k];
     if (v) parts.push(`${k}=${encodeURIComponent(v)}`);
   }
   return parts;
 };
-    const stateFromParams = (params)=>{
-  const state = {};
-  for (const k of URL_KEYS){
-    const v = params.get(k);
-    if (v) state[k] = v;
+    const buildAnswerUrl = (state)=>{
+  if (!state.day) return "/";
+  const day = state.day.split(/\s+/).map(encodeURIComponent).join("_").replace(/%27/g, "'").replace(/%2C/g, ",");
+  const answer = (state.answer ?? "").trim();
+  const emoji = (state.emoji ?? "").trim();
+  const hasAnswer = answer.length > 0 && answer.toUpperCase() !== "YES";
+  const slots = [];
+  if (hasAnswer) {
+    slots.push(answer.toUpperCase().split(/\s+/).map(encodeURIComponent).join("_").replace(/%27/g, "'").replace(/%2C/g, ","));
   }
+  if (emoji) {
+    if (!hasAnswer) slots.push("YES");
+    slots.push(emoji.split(/\s+/).map(encodeURIComponent).join("_").replace(/%27/g, "'").replace(/%2C/g, ","));
+  }
+  const qs = [];
+  for (const k of [
+    "color",
+    "qcolor",
+    "bg"
+  ]){
+    const v = state[k];
+    if (v) {
+      const bare = v.startsWith("#") ? v.slice(1) : v;
+      qs.push(`${k}=${encodeURIComponent(bare)}`);
+    }
+  }
+  if (state.date) qs.push(`date=${encodeURIComponent(state.date)}`);
+  if (state.answer2) qs.push(`answer2=${encodeURIComponent(state.answer2)}`);
+  return "/" + [
+    day,
+    ...slots
+  ].join("/") + (qs.length ? "?" + qs.join("&") : "");
+};
+    const parseAnswerUrl = (pathname, params)=>{
+  const segs = pathname.replace(/^\/+|\/+$/g, "").split("/");
+  if (!segs[0]) return {};
+  const state = {};
+  state.day = decodeURIComponent(segs[0]).replace(/[-_+]+/g, " ").trim();
+  if (segs[1]) state.answer = decodeURIComponent(segs[1].replace(/_/g, "%20")).toUpperCase();
+  if (segs[2]) state.emoji = decodeURIComponent(segs[2].replace(/_/g, "%20"));
+  if (!state.answer) {
+    const q = params.get("answer");
+    if (q) state.answer = q.toUpperCase();
+  }
+  if (!state.emoji) {
+    const q = params.get("emoji");
+    if (q) state.emoji = q;
+  }
+  for (const k of [
+    "color",
+    "qcolor",
+    "bg"
+  ]){
+    const v = params.get(k);
+    if (v) state[k] = /^[0-9a-fA-F]{3,8}$/.test(v) ? "#" + v : v;
+  }
+  const date = params.get("date");
+  if (date && /^\d{2}-\d{2}$/.test(date)) state.date = date;
+  const answer2 = params.get("answer2");
+  if (answer2) state.answer2 = answer2.toUpperCase();
   return state;
 };
     // </url>
@@ -872,14 +928,13 @@
     // </presets>
 
   const params = new URLSearchParams(location.search);
-  const fromPath = decodeURIComponent(location.pathname).replace(/^\/+|\/+$/g, "");
-  const name = fromPath.replace(/[-_+]+/g, " ").trim();
-  const cond = readConditional(params);
-  const resolvedAnswer = resolveAnswer(cond, todayMMDD(new Date(), false));
-  const emoji = params.get("emoji") ?? "";
-  const color = params.get("color");
-  const qcolor = params.get("qcolor");
-  const bg = params.get("bg");
+  const state = parseAnswerUrl(location.pathname, params);
+  const name = state.day ?? "";
+  const resolvedAnswer = resolveAnswer(state, todayMMDD(new Date(), false));
+  const emoji = state.emoji ?? "";
+  const color = state.color;
+  const qcolor = state.qcolor;
+  const bg = state.bg;
 
   const q = document.getElementById("q");
   const a = document.getElementById("a");
@@ -915,9 +970,7 @@
     const qle = document.getElementById("qle");
     ql.hidden = false;
     qle.hidden = false;
-    const editParams = new URLSearchParams(params);
-    editParams.set("day", name);
-    const editHref = "/?" + editParams.toString();
+    const editHref = "/?" + buildUrlParts({ ...state, day: name }).join("&");
     ql.href = editHref;
     qle.href = editHref;
     a.hidden = false;
@@ -1233,9 +1286,7 @@
       ev.preventDefault();
       const day = i.textContent.trim();
       if (!day) { i.focus(); return; }
-      const parts = buildUrlParts(editorState(false));
-      const qs = parts.length ? "?" + parts.join("&") : "";
-      location.href = "/" + encodeURIComponent(day) + qs;
+      location.href = buildAnswerUrl({ ...editorState(false), day });
     });
   }
 </script>

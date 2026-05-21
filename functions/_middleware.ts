@@ -1,28 +1,16 @@
 /// <reference types="@cloudflare/workers-types" />
 
 import rawPresets from "../data/presets.ts";
-import { readConditional, resolveAnswer, todayMMDD } from "../data/answer.ts";
-import { buildUrlParts, stateFromParams } from "../data/url.ts";
+import { resolveAnswer, todayMMDD } from "../data/answer.ts";
+import { buildAnswerUrl, buildUrlParts, parseAnswerUrl, type UrlState } from "../data/url.ts";
 
-const daySlug = (day: string) => day.split(/\s+/).map(encodeURIComponent).join("-");
+const daySlug = (day: string) => day.split(/\s+/).map(encodeURIComponent).join("_");
 
 const PRESET_DAYS = new Set(rawPresets.map((p) => p.day));
 
-const parseDay = (pathname: string) => {
-  const seg = decodeURIComponent(pathname).replace(/^\/+|\/+$/g, "");
-  return seg.replace(/[-_+]+/g, " ").trim();
-};
-
-const dayUrl = (base: string, day: string, params: URLSearchParams) => {
-  const state = stateFromParams(params);
-  state.day = day;
-  return `${base}?${buildUrlParts(state).join("&")}`;
-};
-
-const ogImageUrl = (origin: string, day: string, params: URLSearchParams) =>
-  dayUrl(`${origin}/og.png`, day, params);
-
-const editHref = (day: string, params: URLSearchParams) => dayUrl("/", day, params);
+const editUrl = (state: UrlState) => "/?" + buildUrlParts(state).join("&");
+const ogUrl = (origin: string, state: UrlState) =>
+  `${origin}/og.png?${buildUrlParts(state).join("&")}`;
 
 const setContent = (value: string) => ({
   element(el: Element) {
@@ -56,18 +44,6 @@ type ActivePreset = typeof rawPresets[number] & { date: string; answer2: string 
 const findActivePreset = (mmdd: string): ActivePreset | undefined =>
   rawPresets.find((p): p is ActivePreset => p.date === mmdd);
 
-const activePresetUrl = (p: ActivePreset) => {
-  const qs = new URLSearchParams();
-  qs.set("answer", p.answer);
-  qs.set("answer2", p.answer2);
-  qs.set("date", p.date);
-  if (p.emoji) qs.set("emoji", p.emoji);
-  if (p.color) qs.set("color", p.color);
-  if (p.qcolor) qs.set("qcolor", p.qcolor);
-  if (p.bg) qs.set("bg", p.bg);
-  return `/${daySlug(p.day)}?${qs.toString()}`;
-};
-
 const activePresetStyle = (p: ActivePreset) => {
   const parts: string[] = [];
   if (p.bg) parts.push(`background:${p.bg}`);
@@ -97,7 +73,7 @@ const handleRoot = (response: Response) => {
   const active = findActivePreset(mmdd);
   if (!active) return withCacheControl(response, "public, max-age=3600");
 
-  const href = activePresetUrl(active);
+  const href = buildAnswerUrl(active);
   const styleAttr = activePresetStyle(active);
   const innerHTML = activePresetInner(active);
 
@@ -121,22 +97,21 @@ export const onRequest: PagesFunction = async (ctx) => {
 
   const url = new URL(ctx.request.url);
   if (RESERVED.has(url.pathname)) return response;
-  const day = parseDay(url.pathname);
+  const state = parseAnswerUrl(url.pathname, url.searchParams);
+  const day = state.day ?? "";
   if (!day) return handleRoot(response);
 
-  const params = url.searchParams;
-  const cond = readConditional(params);
-  const answer = resolveAnswer(cond, todayMMDD(new Date(), true));
-  const emoji = params.get("emoji") ?? "";
+  const answer = resolveAnswer(state, todayMMDD(new Date(), true));
+  const emoji = state.emoji ?? "";
 
   const tabTitle = `Is it ${day} day today? ${answer}`;
   const socialTitle = `${emoji ? emoji + " " : ""}${tabTitle}`;
   const question = `Is it ${day} day today?`;
   const desc = `Is it ${day} day today? ${answer}. Today's verdict on whether it's ${day} day.`;
-  const image = ogImageUrl(url.origin, day, params);
+  const image = ogUrl(url.origin, state);
   const canonical = `${url.origin}/${daySlug(day)}`;
   const isPreset = PRESET_DAYS.has(day);
-  const editUrl = editHref(day, params);
+  const editHref = editUrl(state);
 
   const headExtras = [
     jsonLdScript(day, answer),
@@ -182,7 +157,7 @@ export const onRequest: PagesFunction = async (ctx) => {
     .on("a#ql, a#qle", {
       element(el) {
         el.removeAttribute("hidden");
-        el.setAttribute("href", editUrl);
+        el.setAttribute("href", editHref);
       },
     })
     .on("h1#q", {

@@ -1,18 +1,12 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write
 
 import presets from "../data/presets.ts";
-import {
-  isConditional,
-  mergeConditional,
-  readConditional,
-  resolveAnswer,
-  todayMMDD,
-} from "../data/answer.ts";
-import { buildUrlParts, stateFromParams, URL_KEYS } from "../data/url.ts";
+import { resolveAnswer, todayMMDD } from "../data/answer.ts";
+import { buildAnswerUrl, buildUrlParts, parseAnswerUrl } from "../data/url.ts";
 
 const root = new URL("..", import.meta.url).pathname;
 
-const slug = (day: string) => day.replace(/\s+/g, "-");
+const slug = (day: string) => day.replace(/\s+/g, "_");
 const today = new Date().toISOString().slice(0, 10);
 
 const sitemapEntries = [
@@ -35,18 +29,15 @@ const presetBlock = `// <presets>\n    const rawPresets = [\n${rows}\n    ];\n  
 const answerBlock = [
   "// <answer>",
   `    const todayMMDD = ${todayMMDD.toString()};`,
-  `    const mergeConditional = ${mergeConditional.toString()};`,
-  `    const readConditional = ${readConditional.toString()};`,
-  `    const isConditional = ${isConditional.toString()};`,
   `    const resolveAnswer = ${resolveAnswer.toString()};`,
   "    // </answer>",
 ].join("\n");
 
 const urlBlock = [
   "// <url>",
-  `    const URL_KEYS = ${JSON.stringify(URL_KEYS)};`,
   `    const buildUrlParts = ${buildUrlParts.toString()};`,
-  `    const stateFromParams = ${stateFromParams.toString()};`,
+  `    const buildAnswerUrl = ${buildAnswerUrl.toString()};`,
+  `    const parseAnswerUrl = ${parseAnswerUrl.toString()};`,
   "    // </url>",
 ].join("\n");
 
