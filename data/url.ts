@@ -29,38 +29,20 @@ export const buildUrlParts = (state: UrlState) => {
   return parts;
 };
 
-export const stripHash = (s: string) => s.startsWith("#") ? s.slice(1) : s;
-
-export const ensureHash = (s: string) => /^[0-9a-fA-F]{3,8}$/.test(s) ? "#" + s : s;
-
-export const encodePathSeg = (s: string) =>
-  s.split(/\s+/).map(encodeURIComponent).join("_")
-    .replace(/%27/g, "'").replace(/%2C/g, ",");
-
-export const decodeDaySeg = (s: string) => decodeURIComponent(s).replace(/[-_+]+/g, " ").trim();
-
-export const decodeTextSeg = (s: string) => decodeURIComponent(s.replace(/_/g, "%20"));
-
 export const buildAnswerUrl = (state: UrlState) => {
   if (!state.day) return "/";
-  const day = state.day.split(/\s+/).map(encodeURIComponent).join("_")
-    .replace(/%27/g, "'").replace(/%2C/g, ",");
+  const enc = (s: string) =>
+    s.split(/\s+/).map(encodeURIComponent).join("_")
+      .replace(/%27/g, "'").replace(/%2C/g, ",");
+  const day = enc(state.day);
   const answer = (state.answer ?? "").trim();
   const emoji = (state.emoji ?? "").trim();
   const hasAnswer = answer.length > 0 && answer.toUpperCase() !== "YES";
   const slots: string[] = [];
-  if (hasAnswer) {
-    slots.push(
-      answer.toUpperCase().split(/\s+/).map(encodeURIComponent).join("_")
-        .replace(/%27/g, "'").replace(/%2C/g, ","),
-    );
-  }
+  if (hasAnswer) slots.push(enc(answer.toUpperCase()));
   if (emoji) {
     if (!hasAnswer) slots.push("YES");
-    slots.push(
-      emoji.split(/\s+/).map(encodeURIComponent).join("_")
-        .replace(/%27/g, "'").replace(/%2C/g, ","),
-    );
+    slots.push(enc(emoji));
   }
   const qs: string[] = [];
   for (const k of ["color", "qcolor", "bg"] as const) {
@@ -78,18 +60,11 @@ export const buildAnswerUrl = (state: UrlState) => {
 export const parseAnswerUrl = (pathname: string, params: URLSearchParams): UrlState => {
   const segs = pathname.replace(/^\/+|\/+$/g, "").split("/");
   if (!segs[0]) return {};
+  const dec = (s: string) => decodeURIComponent(s.replace(/_/g, "%20"));
   const state: UrlState = {};
-  state.day = decodeURIComponent(segs[0]).replace(/[-_+]+/g, " ").trim();
-  if (segs[1]) state.answer = decodeURIComponent(segs[1].replace(/_/g, "%20")).toUpperCase();
-  if (segs[2]) state.emoji = decodeURIComponent(segs[2].replace(/_/g, "%20"));
-  if (!state.answer) {
-    const q = params.get("answer");
-    if (q) state.answer = q.toUpperCase();
-  }
-  if (!state.emoji) {
-    const q = params.get("emoji");
-    if (q) state.emoji = q;
-  }
+  state.day = dec(segs[0]).trim();
+  if (segs[1]) state.answer = dec(segs[1]).toUpperCase();
+  if (segs[2]) state.emoji = dec(segs[2]);
   for (const k of ["color", "qcolor", "bg"] as const) {
     const v = params.get(k);
     if (v) state[k] = /^[0-9a-fA-F]{3,8}$/.test(v) ? "#" + v : v;

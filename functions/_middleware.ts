@@ -4,8 +4,6 @@ import rawPresets from "../data/presets.ts";
 import { resolveAnswer, todayMMDD } from "../data/answer.ts";
 import { buildAnswerUrl, buildUrlParts, parseAnswerUrl, type UrlState } from "../data/url.ts";
 
-const daySlug = (day: string) => day.split(/\s+/).map(encodeURIComponent).join("_");
-
 const PRESET_DAYS = new Set(rawPresets.map((p) => p.day));
 
 const editUrl = (state: UrlState) => "/?" + buildUrlParts(state).join("&");
@@ -109,7 +107,7 @@ export const onRequest: PagesFunction = async (ctx) => {
   const question = `Is it ${day} day today?`;
   const desc = `Is it ${day} day today? ${answer}. Today's verdict on whether it's ${day} day.`;
   const image = ogUrl(url.origin, state);
-  const canonical = `${url.origin}/${daySlug(day)}`;
+  const canonical = `${url.origin}${buildAnswerUrl({ day })}`;
   const isPreset = PRESET_DAYS.has(day);
   const editHref = editUrl(state);
 
