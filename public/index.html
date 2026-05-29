@@ -23,8 +23,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..900,0..100,0..1;1,9..144,400..900,0..100,0..1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1833872657216386"
-     crossorigin="anonymous"></script>
 <script defer src="https://cloud.umami.is/script.js" data-website-id="3d84798e-202b-4043-8522-130de01b7bb3" data-domains="isthatday.today,www.isthatday.today"></script>
 <style>
   :root {
@@ -140,11 +138,6 @@
     color: var(--accent);
     background: color-mix(in srgb, var(--accent) 10%, transparent);
   }
-  .ad {
-    margin-top: 2.5rem;
-    width: min(400px, 90vw);
-  }
-
   /* ---------- COMPOSER (root editor view) ---------- */
   body.view-edit {
     display: grid;
@@ -713,15 +706,6 @@
   <button class="share" id="s" type="button" hidden>Share</button>
   <a class="edit-link" id="qle" href="/" hidden>edit</a>
 </div>
-<div class="ad" id="ad" hidden>
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-1833872657216386"
-       data-ad-slot="5919153076"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-</div>
-
 <!-- Active conditional preset badge (rendered for / when today matches a preset date) -->
 <a class="active-preset" id="active-preset" hidden></a>
 
@@ -963,9 +947,6 @@
     setFavicon({ emoji, accent: color || defaults.accent, bg: bg || defaults.bg });
     const s = document.getElementById("s");
     s.hidden = false;
-    const ad = document.getElementById("ad");
-    ad.hidden = false;
-    (window.adsbygoogle = window.adsbygoogle || []).push({});
     const flash = (label) => {
       const prev = s.textContent;
       s.textContent = label;
