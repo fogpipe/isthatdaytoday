@@ -7,13 +7,11 @@ import { buildAnswerUrl, buildUrlParts, parseAnswerUrl } from "../data/url.ts";
 const root = new URL("..", import.meta.url).pathname;
 
 const slug = (day: string) => day.replace(/\s+/g, "_");
-const today = new Date().toISOString().slice(0, 10);
 
 const sitemapEntries = [
-  `  <url><loc>https://isthatday.today/</loc><lastmod>${today}</lastmod></url>`,
+  `  <url><loc>https://isthatday.today/</loc></url>`,
   ...presets.map(
-    (p) =>
-      `  <url><loc>https://isthatday.today/${slug(p.day)}</loc><lastmod>${today}</lastmod></url>`,
+    (p) => `  <url><loc>https://isthatday.today/${slug(p.day)}</loc></url>`,
   ),
 ];
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
